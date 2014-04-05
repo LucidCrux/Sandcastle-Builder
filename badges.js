@@ -1,8 +1,11 @@
 ﻿/**************************************************************
- * Badges
+ * Badges and Milestones
  * 
  * New badges should only be added to the END of the list
  * and before the Discoveries section!
+ * 
+ * Milestones are listed after badges, and should only be
+ * added to at the END.
  *************************************************************/
 
 Molpy.DefineBadges = function() {
@@ -1774,4 +1777,42 @@ Molpy.DefineBadges = function() {
 	Molpy.MakeQuadBadge({np:,name:'',desc:''});
 	*/
 	//Molpy.MakeQuadBadge({np:,name:'',desc:''});
+	
+	
+/**************************************************************
+* Milestones
+ *************************************************************/
+	
+	new Molpy.Milestone({
+		name: 'Infinite Sand',
+		reward: 1,
+		
+		checkFunction: function() {
+			return !isFinite(Molpy.Boosts['Sand'].power);
+		}
+	})
+	new Molpy.Milestone({
+		name: 'Infinite Castles',
+		reward: 1,
+		
+		checkFunction: function() {
+			return !isFinite(Molpy.Boosts['Castles'].power);
+		}
+	})
+	new Molpy.Milestone({
+		name: 'Infinite Glass Chips',
+		reward: 1,
+		
+		checkFunction: function() {
+			return !isFinite(Molpy.Boosts['GlassChips'].power);
+		}
+	})
+	new Molpy.Milestone({
+		name: 'Infinite Glass Blocks',
+		reward: 1,
+		
+		checkFunction: function() {
+			return !isFinite(Molpy.Boosts['GlassBlocks'].power);
+		}
+	})
 }

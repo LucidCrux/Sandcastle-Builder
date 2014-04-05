@@ -1748,6 +1748,7 @@ Molpy.Up = function() {
 			this.visibility = args.vis || 0; //0 is normal, 1 is hidden description, 2 is hidden name, 3 is invisible
 			this.group = args.group || 'badges';
 			this.icon = args.icon || Molpy.groupNames[this.group][2];
+			this.isMilestone = args.isMilestone || false; // Badges can be non-repeating Milestones rewarding tickets
 
 			// Methods
 			this.Refresh = function() {
@@ -1913,6 +1914,28 @@ Molpy.Up = function() {
 			var baby = Molpy.Badges[bacon];
 			return baby && baby.earned;
 		};
+		
+		Molpy.Milestones = [];
+		Molpy.milestoneNum = 0;
+		Molpy.Milestone = function(args) {
+			this.id = Molpy.milestoneNum;
+			this.name = args.name;
+			this.reward = args.reward; // Number of tickets rewarded
+			this.earned = 0;
+			this.repeating = args.repeating || true; // If true resets on Molpy.down, if false is a one time reward
+			this.checkFunction = args.check; // The function that determines if the milestone has been reached
+			
+			Molpy.Milestones[this.name] = this;
+			Molpy.milestoneNum ++;
+		}
+		
+		$.extend(Molpy.Milestone.prototype, {
+			passMilestone: function() {
+				this.earned = 1;
+				// TODO add stuff to unlock prize shop if first time
+				Molpy.Notify('You\'ve earned ' + Molpify(this.reward) + ' ticket' + plural(this.reward) + ' for:<br>' + this.name, 1);
+			}
+		})
 
 		Molpy.Hands = [];
 		Molpy.HandsById = [];

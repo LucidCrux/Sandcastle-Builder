@@ -9375,6 +9375,21 @@ Molpy.DefineBoosts = function() {
 			Vacuum:'1Z',
 		},
 	});
+	new Molpy.Boost({
+		name: 'Ticket',
+		icon: 'ticket',
+		group: 'stuff',
+		stats: 'Produced by Vacuum Cleaner',
+		
+		desc: function(me) {
+			var str = 'You have ' + Molpify(me.Level, 3) + ' ticket' + plural(me.Level) + '.'
+			        + '<br>These are earned by reaching certain milestones in the game. Some milestones '
+			        + 'are rewarded every Molpy Down, others are rewarded only once.';
+			return str;
+		},
+		
+		defStuff: 1,
+	});
 
 
 	// END OF BOOSTS, add new ones immediately before this comment
