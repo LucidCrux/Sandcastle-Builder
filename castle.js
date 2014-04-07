@@ -1871,7 +1871,10 @@ Molpy.Up = function() {
 				var baby = Molpy.Badges[bacon];
 				if(baby) {
 					if(baby.earned == 0 && !Molpy.needlePulling) {
-						baby.earned = 1;
+						if(baby.isMilestone) {
+							Molpy.Milestone.prototype.passMilestone.call(baby);
+						} else
+							baby.earned = 1;
 						Molpy.lootAddBadge(baby);
 						_gaq && _gaq.push(['_trackEvent', 'Badge', 'Earn', baby.name, Molpy.BadgesOwned < 6 || baby.group != 'badges' && !camera]);
 						if(Molpy.BadgesOwned == 0) Molpy.EarnBadge('Redundant Redundancy');
@@ -1931,9 +1934,22 @@ Molpy.Up = function() {
 		
 		$.extend(Molpy.Milestone.prototype, {
 			passMilestone: function() {
+				if(this.earned) return;
 				this.earned = 1;
-				// TODO add stuff to unlock prize shop if first time
+				
+				// If this is the first ticket, modify the shop
+				if(!Molpy.Got('Tickets')) {
+					$('#shopTitleChecks').show();
+					$('#shopPrizesCheck').prop('checked', true);
+					Molpy.Notify('You\'ve unlocked the Prize Shop!', 1);
+					Molpy.UnlockBoost('Tickets');
+					Molpy.Boosts['Tickets'].buy();
+				}
+				
+				Molpy.Add('Tickets', this.reward);
+				
 				Molpy.Notify('You\'ve earned ' + Molpify(this.reward) + ' ticket' + plural(this.reward) + ' for:<br>' + this.name, 1);
+				Molpy.shopNeedRepaint = 1;
 			}
 		})
 
@@ -2003,7 +2019,7 @@ Molpy.Up = function() {
 			this.divList = {
 					1: $('#sandtools'),
 					2: $('#castletools'),
-					3: $('#boosts'),
+					3: $('#shop'),
 					4: $('#loot'), // in a boost group
 					5: $('#loot'), // in a badge  group
 					6: $('#loot'), // in badges available
@@ -2011,7 +2027,7 @@ Molpy.Up = function() {
 			this.titleList = {
 					1: $('#toolSTitle'),
 					2: $('#toolCTitle'),
-					3: $('#boostTitle'),
+					3: $('#shopTitle'),
 					4: $('#lootTitle'),
 					5: $('#lootTitle'),
 					6: $('#lootTitle'),
@@ -2203,6 +2219,14 @@ Molpy.Up = function() {
 		Molpy.Redacted = new Molpy.Redacted(); // Why do I have to do this?
 		
 		Molpy.TaggedLoot = [];
+		Molpy.UnlockedPrizes = [];
+		
+		Molpy.BuildPrizeList = function () {
+			for(var i in Molpy.Boosts) {
+				var me = Molpy.Boosts[i];
+				if(me.unlocked && me.group == 'prize') Molpy.UnlockedPrizes.push(me);
+			}
+		}
 		
 		Molpy.BuildLootLists = function () {
 			Molpy.TaggedLoot = [];

@@ -7039,6 +7039,9 @@ Molpy.DefineBoosts = function() {
 			if(newSand >= 782222222144) {
 				Molpy.EarnBadge('Store ALL of the sand');
 			}
+			if(!isFinite(newSand)) {
+				Molpy.Milestones['Infinite Sand'].passMilestone();
+			}
 			
 			if(this.totalDug >= 5000) Molpy.UnlockBoost('Molpies');
 		},
@@ -7308,8 +7311,11 @@ Molpy.DefineBoosts = function() {
 			if(Molpy.Has('Castles', DeMolpify('1WQ'))) {
 				Molpy.EarnBadge('What Queue');
 			}
-			if(!isFinite(this.power) && !isFinite(Molpy.Boosts['Sand'].power)) {
-				Molpy.EarnBadge('Everything but the Kitchen Windows');
+			if(!isFinite(this.power)) {
+				Molpy.Milestones['Infinite Castles'].passMilestone();
+				if(!isFinite(Molpy.Boosts['Sand'].power)) {
+					Molpy.EarnBadge('Everything but the Kitchen Windows');
+				}
 			}
 			Molpy.Boosts['Time Travel'].Refresh();
 		},
@@ -9376,14 +9382,13 @@ Molpy.DefineBoosts = function() {
 		},
 	});
 	new Molpy.Boost({
-		name: 'Ticket',
+		name: 'Tickets',
 		icon: 'ticket',
 		group: 'stuff',
-		stats: 'Produced by Vacuum Cleaner',
 		
 		desc: function(me) {
 			var str = 'You have ' + Molpify(me.Level, 3) + ' ticket' + plural(me.Level) + '.'
-			        + '<br>These are earned by reaching certain milestones in the game. Some milestones '
+			        + '<br><br>These are earned by reaching certain milestones in the game. Some milestones '
 			        + 'are rewarded every Molpy Down, others are rewarded only once.';
 			return str;
 		},

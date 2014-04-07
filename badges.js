@@ -725,7 +725,9 @@ Molpy.DefineBadges = function() {
 	});
 	new Molpy.Badge({
 		name: 'Everything but the Kitchen Windows',
-		desc: 'Have Infinite Sand and Castles'
+		desc: 'Have Infinite Sand and Castles',
+		isMilestone: true,
+		reward: 1,
 	});
 	new Molpy.Badge({
 		name: 'Ceiling Disintegrated',

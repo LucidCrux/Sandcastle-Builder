@@ -114,6 +114,9 @@
 		
 		Molpy.BuildLootLists();
 		Molpy.needlePulling = 0;
+		if(!Molpy.Got('Tickets')) {
+			$('#shopTitleChecks').hide();
+		}
 		if(!success) return;
 		Molpy.loadCount++;
 		_gaq && _gaq.push(['_trackEvent', 'Load', 'Complete', '' + Molpy.loadCount]);
