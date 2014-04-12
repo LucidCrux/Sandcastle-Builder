@@ -937,55 +937,6 @@
 		}
 	}
 
-	Molpy.MakePrizeList = function() {
-		Molpy.prizeList = [];
-		for( var i in Molpy.Boosts) {
-			var me = Molpy.Boosts[i];
-			var t = EvalMaybeFunction(me.tier, 'low');
-			if(!Molpy.prizeList[t]) Molpy.prizeList[t] = [''];
-			if(t != EvalMaybeFunction(me.tier, 'high')) {
-				Molpy.prizeList[t][0] = me.alias;
-			} else {
-				Molpy.prizeList[t].push(me.alias);
-			}
-		}
-	}
-
-	Molpy.LockPrize = function(id) {
-		var t = EvalMaybeFunction(Molpy.BoostsById[id].tier, 'spend');
-		var list = [];
-		list[t] = Molpy.BoostsById[id].prizes;
-		Molpy.AwardPrizes(list);
-	}
-
-	Molpy.AwardPrizes = function(prizeCounts) {
-		if(!Molpy.prizeList) Molpy.MakePrizeList();
-		for( var i in prizeCounts) {
-			var c = prizeCounts[i];
-			var p = Molpy.prizeList[i];
-			var l = p.length;
-			if(c >= l) {
-				Molpy.UnlockBoost(p);
-			} else if(c == l - 1) {
-				Molpy.UnlockBoost(p.slice(1));
-			} else {
-				p = p.slice(1);
-				p = Molpy.NotGot(p);
-				ShuffleList(p);
-				l = p.length;
-				Molpy.UnlockBoost(p.slice(l - c));
-			}
-		}
-	}
-	Molpy.NotGot = function(prizes) {
-		var ng = [];
-		for( var i in prizes) {
-			var p = prizes[i];
-			if(!Molpy.Got(p)) ng.push(p);
-		}
-		return ng;
-	}
-
 	/* In which a routine for resetting the game is presented
 	+++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 	Molpy.Down = function(coma) {
@@ -1065,6 +1016,8 @@
 			var prizeCounts = [];
 			for(i in Molpy.Boosts) {
 				var me = Molpy.Boosts[i];
+				// Prizes persist except on coma
+				if(!coma && me.group == 'prize') continue;
 				if(boh && me.group == 'stuff') {
 					if(!isFinite(me.Level))
 						me.Level = maxKeep;
@@ -1078,14 +1031,6 @@
 					continue;
 				if(boj && !me.prizes && me.group == 'chron')
 					continue;
-				if(!coma && me.bought && me.prizes) {
-					var t = EvalMaybeFunction(me.tier, 'spend');
-					if(!prizeCounts[t]) {
-						prizeCounts[t] = me.prizes;
-					} else {
-						prizeCounts[t] += me.prizes;
-					}
-				}
 				if(me.Level) me.Level = 0;
 				me.unlocked = 0;
 				me.bought = 0;
@@ -1093,7 +1038,6 @@
 				if(me.startPower) me.power = EvalMaybeFunction(me.startPower);
 				me.countdown = 0;
 			}
-			Molpy.AwardPrizes(prizeCounts);
 			
 			Molpy.Boosts['Kite and Key'].power = KaKPower;
 			Molpy.Boosts['Lightning in a Bottle'].power = LiBPower;
