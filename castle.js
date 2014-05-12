@@ -79,6 +79,7 @@ Molpy.Up = function() {
 		Molpy.highestNPvisited = 1; //keep track of where the player has been
 		Molpy.toolsBuilt = 0;
 		Molpy.toolsBuiltTotal = 0;
+		Molpy.recalculateRates = 0;
 		
 		Molpy.dispObjects = {shop: [], tools: [], boosts: [], badges: [], tagged: [], search: [], faves: []} // Lists of objects currently being displayed
 		Molpy.mouseIsOver = null;
