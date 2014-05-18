@@ -1,8 +1,11 @@
 ﻿/**************************************************************
- * Badges
+ * Badges and Milestones
  * 
  * New badges should only be added to the END of the list
  * and before the Discoveries section!
+ * 
+ * Milestones are listed after badges, and should only be
+ * added to at the END.
  *************************************************************/
 
 Molpy.DefineBadges = function() {
@@ -722,7 +725,9 @@ Molpy.DefineBadges = function() {
 	});
 	new Molpy.Badge({
 		name: 'Everything but the Kitchen Windows',
-		desc: 'Have Infinite Sand and Castles'
+		desc: 'Have Infinite Sand and Castles',
+		isMilestone: true,
+		reward: 1,
 	});
 	new Molpy.Badge({
 		name: 'Ceiling Disintegrated',
@@ -1826,4 +1831,42 @@ Molpy.DefineBadges = function() {
 	Molpy.MakeQuadBadge({np:3087,name:'Find out',desc:'Megan: But I bet we can  figure it out!  C\'mon let\'s see what\'s through here!'});
 	Molpy.MakeQuadBadge({np:3089,name:'The End',desc:'Sob sob cry, bring on the ice cream'});
 	//Molpy.MakeQuadBadge({np:,name:'',desc:''});
+	
+	
+/**************************************************************
+* Milestones
+ *************************************************************/
+	
+	new Molpy.Milestone({
+		name: 'Infinite Sand',
+		reward: 1,
+		
+		checkFunction: function() {
+			return !isFinite(Molpy.Boosts['Sand'].power);
+		}
+	})
+	new Molpy.Milestone({
+		name: 'Infinite Castles',
+		reward: 1,
+		
+		checkFunction: function() {
+			return !isFinite(Molpy.Boosts['Castles'].power);
+		}
+	})
+	new Molpy.Milestone({
+		name: 'Infinite Glass Chips',
+		reward: 1,
+		
+		checkFunction: function() {
+			return !isFinite(Molpy.Boosts['GlassChips'].power);
+		}
+	})
+	new Molpy.Milestone({
+		name: 'Infinite Glass Blocks',
+		reward: 1,
+		
+		checkFunction: function() {
+			return !isFinite(Molpy.Boosts['GlassBlocks'].power);
+		}
+	})
 }

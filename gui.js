@@ -383,7 +383,7 @@ Molpy.DefineGUI = function() {
 
 	createClockHand();
 
-	var fadeClasses = 'body , .floatbox , .lootbox , .minifloatbox , .floatsquare , .infobox , .icon , .descshow , .deschide , .badge.shop h1, #toolSTitle, #toolCTitle, #boostTitle';
+	var fadeClasses = 'body , .floatbox , .lootbox , .minifloatbox , .floatsquare , .infobox , .icon , .descshow , .deschide , .badge.shop h1, #toolSTitle, #toolCTitle, #shopTitle';
 	var vendors = ['-webkit-', '-moz-', '-o-', '-ms-', ''];
 	var fadeProps = ['color', 'border-color', 'background-color', 'background-image'];
 
@@ -683,25 +683,39 @@ Molpy.DefineGUI = function() {
 		Molpy.shopNeedRepaint = 0;
 		var pos = null;
 		
-		if(!noLayout) pos = Molpy.getScrollLoc('#boosts');
+		if(!Molpy.Got('Tickets')) {
+			$('#shopTitleChecks').hide();
+		}
+		
+		if(!noLayout) pos = Molpy.getScrollLoc('#shop');
 		
 		Molpy.removeGroupDivs(Molpy.dispObjects.shop);
 		Molpy.dispObjects.shop = [];
 
-		var shopList = [];
+		var shopBoostList = [];
+		var shopPrizeList = [];
 		for( var i in Molpy.Boosts) {
 			var boost = Molpy.Boosts[i];
-			if(!boost.bought && boost.unlocked) shopList.push(boost);
+			if(!boost.bought && boost.unlocked) {
+				if(boost.group != 'prize') shopBoostList.push(boost);
+				else if(boost.group == 'prize') shopPrizeList.push(boost);
+			}
 		}
 	
-		if(Molpy.options.boostsort > 0)
-			shopList.sort(Molpy.NameSort);
-		else
-			shopList.sort(Molpy.PriceSort);
+		if(Molpy.options.shopsort > 0) {
+			shopBoostList.sort(Molpy.NameSort);
+			shopPrizeList.sort(Molpy.NameSort);
+		} else {
+			shopBoostList.sort(Molpy.PriceSort);
+			shopPrizeList.sort(Molpy.NameSort);
+		}
 		
-		Molpy.addGroupToDiv($('#boosts'), shopList, 0, shopList.length - 1, 'shop', {autoAdd: true, recalc: true});
+		if($('#shopBoostsCheck').prop('checked'))
+			Molpy.addGroupToDiv($('#shop'), shopBoostList, 0, shopBoostList.length - 1, 'shop', {autoAdd: true, recalc: true});
+		if($('#shopPrizesCheck').prop('checked'))
+			Molpy.addGroupToDiv($('#shop'), shopPrizeList, 0, shopPrizeList.length - 1, 'shop', {autoAdd: true, recalc: true});
 		
-		if(!noLayout) Molpy.setScrollLoc('#boosts', pos);
+		if(!noLayout) Molpy.setScrollLoc('#shop', pos);
 	}
 	
 	Molpy.repaintTools = function(args) {

@@ -80,6 +80,7 @@ Molpy.Up = function() {
 		Molpy.highestNPvisited = 1; //keep track of where the player has been
 		Molpy.toolsBuilt = 0;
 		Molpy.toolsBuiltTotal = 0;
+		Molpy.recalculateRates = 0;
 		
 		Molpy.dispObjects = {shop: [], tools: [], boosts: [], badges: [], tagged: [], search: [], faves: []} // Lists of objects currently being displayed
 		Molpy.mouseIsOver = null;
@@ -1761,6 +1762,7 @@ Molpy.Up = function() {
 			this.visibility = args.vis || 0; //0 is normal, 1 is hidden description, 2 is hidden name, 3 is invisible
 			this.group = args.group || 'badges';
 			this.icon = args.icon || Molpy.groupNames[this.group][2];
+			this.isMilestone = args.isMilestone || false; // Badges can be non-repeating Milestones rewarding tickets
 
 			// Methods
 			this.Refresh = function() {
@@ -1883,7 +1885,10 @@ Molpy.Up = function() {
 				var baby = Molpy.Badges[bacon];
 				if(baby) {
 					if(baby.earned == 0 && !Molpy.needlePulling) {
-						baby.earned = 1;
+						if(baby.isMilestone) {
+							Molpy.Milestone.prototype.passMilestone.call(baby);
+						} else
+							baby.earned = 1;
 						Molpy.lootAddBadge(baby);
 						_gaq && _gaq.push(['_trackEvent', 'Badge', 'Earn', baby.name, Molpy.BadgesOwned < 6 || baby.group != 'badges' && !camera]);
 						if(Molpy.BadgesOwned == 0) Molpy.EarnBadge('Redundant Redundancy');
@@ -1926,6 +1931,41 @@ Molpy.Up = function() {
 			var baby = Molpy.Badges[bacon];
 			return baby && baby.earned;
 		};
+		
+		Molpy.Milestones = [];
+		Molpy.milestoneNum = 0;
+		Molpy.Milestone = function(args) {
+			this.id = Molpy.milestoneNum;
+			this.name = args.name;
+			this.reward = args.reward; // Number of tickets rewarded
+			this.earned = 0;
+			this.repeating = args.repeating || true; // If true resets on Molpy.down, if false is a one time reward
+			this.checkFunction = args.check; // The function that determines if the milestone has been reached
+			
+			Molpy.Milestones[this.name] = this;
+			Molpy.milestoneNum ++;
+		}
+		
+		$.extend(Molpy.Milestone.prototype, {
+			passMilestone: function() {
+				if(this.earned) return;
+				this.earned = 1;
+				
+				// If this is the first ticket, modify the shop
+				if(!Molpy.Got('Tickets')) {
+					$('#shopTitleChecks').show();
+					$('#shopPrizesCheck').prop('checked', true);
+					Molpy.Notify('You\'ve unlocked the Prize Shop!', 1);
+					Molpy.UnlockBoost('Tickets');
+					Molpy.Boosts['Tickets'].buy();
+				}
+				
+				Molpy.Add('Tickets', this.reward);
+				
+				Molpy.Notify('You\'ve earned ' + Molpify(this.reward) + ' ticket' + plural(this.reward) + ' for:<br>' + this.name, 1);
+				Molpy.shopNeedRepaint = 1;
+			}
+		})
 
 		Molpy.Hands = [];
 		Molpy.HandsById = [];
@@ -1993,7 +2033,7 @@ Molpy.Up = function() {
 			this.divList = {
 					1: $('#sandtools'),
 					2: $('#castletools'),
-					3: $('#boosts'),
+					3: $('#shop'),
 					4: $('#loot'), // in a boost group
 					5: $('#loot'), // in a badge  group
 					6: $('#loot'), // in badges available
@@ -2001,7 +2041,7 @@ Molpy.Up = function() {
 			this.titleList = {
 					1: $('#toolSTitle'),
 					2: $('#toolCTitle'),
-					3: $('#boostTitle'),
+					3: $('#shopTitle'),
 					4: $('#lootTitle'),
 					5: $('#lootTitle'),
 					6: $('#lootTitle'),
@@ -2215,6 +2255,14 @@ Molpy.Up = function() {
 		Molpy.Redacted = new Molpy.Redacted(); // Why do I have to do this?
 		
 		Molpy.TaggedLoot = [];
+		Molpy.UnlockedPrizes = [];
+		
+		Molpy.BuildPrizeList = function () {
+			for(var i in Molpy.Boosts) {
+				var me = Molpy.Boosts[i];
+				if(me.unlocked && me.group == 'prize') Molpy.UnlockedPrizes.push(me);
+			}
+		}
 		
 		Molpy.BuildLootLists = function () {
 			Molpy.TaggedLoot = [];
