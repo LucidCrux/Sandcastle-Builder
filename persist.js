@@ -538,7 +538,7 @@
 			Molpy.Redacted.chainCurrent = parseFloat(pixels[14]) || 0;
 			Molpy.Redacted.chainMax = parseFloat(pixels[15]) || 0;
 			Molpy.lootPerPage = parseInt(pixels[16]) || 20;
-			Molpy.downNP = parseInt(pixels[17]) || Math.abs(Molpy.newpixNumber);
+			Molpy.downNP = parseInt(pixels[17]) || Math.abs(Molpy.highestNPvisited);
 			Molpy.downCount = parseInt(pixels[18]) || 0;
 		}
 	};
@@ -1090,7 +1090,7 @@
 	/* In which a routine for resetting the game is presented
 	+++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 	Molpy.Down = function(coma) {
-		if(coma || confirm('Really Molpy Down?\n(Progress will be reset but achievements will not.)')) {
+		if(coma || Molpy.confirmMolpyDown()) {
 
 			coma || _gaq && _gaq.push(['_trackEvent', 'Molpy Down', 'Begin', '' + Molpy.newpixNumber]);
 			Molpy.Boosts['Sand'].totalDug = 0;
@@ -1207,8 +1207,8 @@
 			Molpy.BuildLootLists();
 			
 			//Only count the MD if at least 5 NP have passed since last MD
-			if(Molpy.downNP <= Math.abs(Molpy.newpixNumber) - 5) Molpy.downCount ++;			
-			Molpy.downNP = Math.abs(Molpy.newpixNumber);
+			if(Molpy.downNP <= Math.abs(Molpy.highestNPvisited) - 5) Molpy.downCount ++;			
+			Molpy.downNP = Math.abs(Molpy.highestNPvisited);
 			
 			coma || _gaq && _gaq.push(['_trackEvent', 'Molpy Down', 'Complete', '' + Molpy.highestNPvisited]);
 			
@@ -1219,7 +1219,7 @@
 	Molpy.unlockPrizesOnDown = function() {
 		// Hide notification if prizes aren't available yet
 		var noNotify = !Molpy.Got('Tickets');
-		if(Moply.downCount >= 1) {
+		if(Molpy.downCount >= 1) {
 			Molpy.UnlockBoost('Doubletap', noNotify);
 		}
 		if(Molpy.downCount >= 2) {
@@ -1239,6 +1239,16 @@
 		}
 	}
 	
+	Molpy.confirmMolpyDown = function() {
+		var msg = '!!! WARNING !!! Your progress will be reset but achievements will not.';
+		if(Molpy.downNP > Math.abs(Molpy.highestNPvisited) - 5) {
+			msg += '\nAlso, because you have not progressed at least 5 NewPix,\nthis will not count towards your Molpy Down total.';
+		}
+		msg += '\n\nDo you still want to Molpy Down?';
+		
+		return confirm(msg);
+	}
+	
 	Molpy.Coma = function() {
 		if(confirm('Really coma?\n(This will wipe all progress and badges!)')
 			&& confirm('Seriously, this will reset ALL the things.\nAre you ABSOLUTELY sure?')) {
@@ -1247,7 +1257,7 @@
 			Molpy.Down(1);
 			Molpy.saveCount = 0;
 			Molpy.loadCount = 0;
-			Molpy.downNP = 1;
+			Molpy.downNP = 0;
 			Molpy.downCount = 0;
 			Molpy.DefaultOptions();
 			var highest = Molpy.highestNPvisited;
