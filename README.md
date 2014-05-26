@@ -32,6 +32,67 @@ For personal amusement only.
 
 ## Changelog
 
+### 3.5104
+
+#### Waveney
+- Totally screwed up the cap on draconic experience - should have been min not max
+- If you have 1G or more experience (due to either the original bug, or my recent error
+- It will reset it to 1M*Dragon Queen Level 
+- Sorry.
+
+### 3.5103
+
+#### Waveney
+- Fixed problem with Ninja Ritual not restarting
+- Cap draconic experience (if you expolited the bug in 3.51)
+- How big is a clutch
+- Allow CDSP upgrades under 100 whatever the PR level
+
+### 3.5102 Less Bugs
+
+#### Waveney
+- Fixed mustard if you failed to feed hatchlings
+- Fixed a refresh
+- Reduced cost of the Dragon Keeping Manual
+- Fixed one bug on dragon fights
+
+### 3.5101 Fewer Bugs
+
+#### Waveney
+- CDSP Multi- buy should work
+- Fights now possible to win
+
+### 3.51 
+
+#### Waveney
+- Typos-=some, fixes, tweaks
+- Aleph e needs to be enabled to be used
+- Prevent buying multiple cheap Dragon Eggs 
+- Some nerfing of draconic boosts
+- The limits of some things are now lower
+- Changed the way Camelflarge works
+- Several new Draconic and other boosts one of which is really for the future
+- Recalibrated opponents
+- CDSP limits and a multibuy
+- Note: Still no Progress beyond the second type of Dragon (DragonNewts)
+
+### 3.5005 Fix Five
+
+#### Waveney
+- No more object Object dragons
+
+### 3.5004 Fix Math.ceil(Math.PI)
+
+#### Waveney
+- Cup of Tea typo, breath typo, Armour typo, limit defaults to 1
+- Correct type of dragon displayed in the NP dragons Info
+- Cups of Tea and Healing potions should work
+- A nerf
+
+#### LucidCrux
+- Fix index not showng version and related error
+- Fixed a typo
+
 ### 3.5003 Fix Math.floor(Math.PI)
 
 #### Waveney

@@ -92,6 +92,7 @@
 		localStorage['Badges'] = Molpy.BadgesToString();
 		localStorage['OtherBadges'] = Molpy.OtherBadgesToString();
 		localStorage['NPdata'] = Molpy.NPdataToString();
+		localStorage['Milestones'] = Molpy.MilestonesToString();
 		return 1;
 	}
 
@@ -167,6 +168,7 @@
 		Molpy.BadgesFromString(localStorage['Badges'], version);
 		Molpy.OtherBadgesFromString(localStorage['OtherBadges'], version);
 		Molpy.NPdataFromString(localStorage['NPdata'], version);
+		Molpy.MilestonesFromString(localStorage['Milestones'], version);
 		return Molpy.PostLoadTasks(version);
 	}
 
@@ -424,6 +426,16 @@
 		npdsthread = str;
 		return str;
 	}
+	
+	Molpy.MilestonesToString = function() {
+		var s = 'S'; //Semicolon
+		var c = 'C'; //Comma
+		var str = '';
+		for( var which in Molpy.Milestones) {
+			str += Molpy.Milestones[which].earned;
+		}
+		return str;
+	}
 
 	/* In which I do save and load!
 	+++++++++++++++++++++++++++++++*/
@@ -457,6 +469,10 @@
 
 		thread = '';
 		thread += Molpy.NPdataToString() + p;
+		threads.push(thread);
+		
+		thread = '';
+		thread += Molpy.MilestonesToString() + p;
 		threads.push(thread);
 		return threads;
 	}
@@ -637,7 +653,7 @@
 				}
 				
 				// If it has a countdown, then it was only a temporary boost
-				if(me.countdown) {
+				if(me.countdown && !me.NotTemp) {
 					Molpy.GiveTempBoost(me.name, me.power, me.countdown);
 				}
 				
@@ -768,6 +784,20 @@
 			}
 		}
 	}
+	
+	Molpy.MilestonesFromString = function(thread, version) {
+		var s = 'S'; //Semicolon
+		var c = 'C'; //Comma
+		var pixels = thread.split('');
+		for( var which in Molpy.Milestones) {
+			if(pixels[0]) {
+				Molpy.Milestones[which].earned = pixels[0];
+				pixels.shift();
+			} else {
+				Molpy.Milestones[which].earned = 0;
+			}
+		}
+	}	
 
 	Molpy.ValidateVersion = function(version) {
 		_gaq && _gaq.push(['_trackEvent', 'Load', 'Version', '' + version, true]);
@@ -812,6 +842,7 @@
 		//thread[9] is unused
 		Molpy.OtherBadgesFromString(thread[10] || '', version);
 		Molpy.NPdataFromString(thread[11] || '', version);
+		Molpy.MilestonesFromString(thread[12] || '', version);
 		return Molpy.PostLoadTasks(version);
 	}
 	Molpy.PreLoadTasks = function(version) {
@@ -1028,6 +1059,26 @@
 		if(version < 3.5) {
 			if (Molpy.Boosts['CDSP'].power >=1024) Molpy.UnlockBoost('The Fading');
 			if (Molpy.Got('DQ')) Molpy.UnlockBoost('RDKM');
+		}
+		if(version < 3.51) {
+			if (Molpy.Got('DQ')) {
+				Molpy.Boosts['Camelflarge'].bought = Math.min(Molpy.Boosts['Camelflarge'].bought, Molpy.Boosts['Camelflarge'].limit());
+				Molpy.Boosts['Big Teeth'].bought = Math.min(Molpy.Boosts['Big Teeth'].bought, Molpy.Boosts['Big Teeth'].limit());
+				Molpy.Boosts['Spines'].bought = Math.min(Molpy.Boosts['Spines'].bought, Molpy.Boosts['Spines'].limit());
+				Molpy.Boosts['Healing Potion'].bought = Math.min(Molpy.Boosts['Healing Potion'].bought, Molpy.Boosts['Healing Potion'].limit);
+			};
+		}
+		if(version < 3.5104) {
+			if (Molpy.Boosts['DQ'].experience >= 1e9) Molpy.Boosts['DQ'].experience = 1000000*Molpy.Level('DQ');
+		}
+		// Reward prize tickets for past badges, may need spam work around
+		if(version < 9.9) {
+			for(var i in Molpy.BadgesById) {
+				var badge = Molpy.BadgesById[i];
+				if(badge.earned && badge.reward) {
+					Molpy.Milestone.prototype.passMilestone.call(badge);
+				}
+			}
 		}
 
 	}
