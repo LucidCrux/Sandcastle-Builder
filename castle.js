@@ -75,12 +75,13 @@ Molpy.Up = function() {
 		Molpy.ninjaStealth = 0; //streak of uninterrupted ninja-free newpix
 		Molpy.saveCount = 0; //number of times game has been saved
 		Molpy.loadCount = 0; //number of times gave has been loaded
+		Molpy.downNP = 1; // NP of last Molpy Down
+		Molpy.downCount = 0; // Number of times Molpied Down
 		Molpy.needRebuildLootList = 0; // When loading data, loot lists need rebuilt
 		Molpy.autosaveCountup = 0;
 		Molpy.highestNPvisited = 1; //keep track of where the player has been
 		Molpy.toolsBuilt = 0;
 		Molpy.toolsBuiltTotal = 0;
-		Molpy.recalculateRates = 0;
 		
 		Molpy.dispObjects = {shop: [], tools: [], boosts: [], badges: [], tagged: [], search: [], faves: []} // Lists of objects currently being displayed
 		Molpy.mouseIsOver = null;
@@ -204,7 +205,7 @@ Molpy.Up = function() {
 				if(Molpy.beachClicks % sawmod == 0) {
 					Molpy.Notify(Molpy.Boosts['VJ'].name);
 					Molpy.Boosts['Castles'].build(Molpy.Boosts['VJ'].getReward(1));
-					Molpy.Boosts['VJ'].power++;
+					Molpy.Boosts['VJ'].Add(1);
 					Molpy.Boosts['VJ'].Refresh();
 					var sawType = 'Plain';
 					if(Molpy.Got('Swedish Chef')) sawType = 'Swedish Chef';
@@ -517,6 +518,10 @@ Molpy.Up = function() {
 				if(isNaN(Molpy.CastleToolsById[i].amount)) Molpy.mustardTools ++;	
 			}
 			if(Molpy.mustardTools == 12) Molpy.EarnBadge('Mustard Tools');
+			if(Molpy.mustardTools >= 1) {
+				Molpy.UnlockBoost('Spare Tools');
+				Molpy.UnlockBoost('Mustard Automation');
+			}
 		};
 
 		Molpy.SandTool = function(args) {
@@ -1656,7 +1661,8 @@ Molpy.Up = function() {
 			return this;
 		};
 
-		Molpy.UnlockBoost = function(bacon, auto) {
+		Molpy.UnlockBoost = function(bacon, noNotify) {
+			noNotify = noNotify || 0;
 			if(typeof bacon === 'string') {
 				var me = Molpy.Boosts[bacon];
 				if(me) {
@@ -1664,7 +1670,7 @@ Molpy.Up = function() {
 						me.unlocked = 1;
 						Molpy.shopNeedRepaint = 1;
 						Molpy.RatesRecalculate();
-						if(!Molpy.boostSilence && !(Molpy.Got('ASHF') && me.alias == Molpy.shoppingItem)) {
+						if(!Molpy.boostSilence && !noNotify && !(Molpy.Got('ASHF') && me.alias == Molpy.shoppingItem)) {
 							Molpy.Notify('Boost Unlocked: ' + me.name, 1);
 							_gaq && _gaq.push(['_trackEvent', 'Boost', 'Unlock', me.name, true]);
 						}
@@ -1918,6 +1924,20 @@ Molpy.Up = function() {
 							if (Molpy.options.autoshow==1 || (baby.group != 'monumg' && baby.group != 'monums'))
 								Molpy.ShowGroup(baby.group, baby.className);
 						}
+						
+						if(!Molpy.Boosts['Archimedes'].unlocked && (baby.group == 'monumg' || baby.group == 'momums')) {
+							if((Molpy.groupBadgeCounts['monumg'] + Molpy.groupBadgeCounts['monums']) >= 250) {
+								var noNotify = !Molpy.Got('Tickets');
+								Molpy.UnlockBoost('Archimedes', noNotify);
+							}
+						}
+						
+						if(!Molpy.Boosts['BoM'].unlocked && baby.group == 'monumg') {
+							if(Molpy.groupBadgeCounts['monumg'] >= 200) {
+								var noNotify = !Molpy.Got('Tickets');
+								Molpy.UnlockBoost('BoM', noNotify);
+							}
+						}
 
 					}
 				}
@@ -1940,12 +1960,13 @@ Molpy.Up = function() {
 			this.reward = args.reward; // Number of tickets rewarded
 			this.earned = 0;
 			this.repeating = args.repeating || true; // If true resets on Molpy.down, if false is a one time reward
-			this.checkFunction = args.check; // The function that determines if the milestone has been reached
+			this.checkFunction = args.check; // Function can be used to check if milestone should be rewarded, may be redundant and removable later
 			
 			Molpy.Milestones[this.name] = this;
 			Molpy.milestoneNum ++;
 		}
 		
+		//prototype functions to avoid duplication on each milestone
 		$.extend(Molpy.Milestone.prototype, {
 			passMilestone: function() {
 				if(this.earned) return;
@@ -1958,6 +1979,10 @@ Molpy.Up = function() {
 					Molpy.Notify('You\'ve unlocked the Prize Shop!', 1);
 					Molpy.UnlockBoost('Tickets');
 					Molpy.Boosts['Tickets'].buy();
+					
+					//Have at least a few prizes available no matter what
+					Molpy.UnlockBoost('Single Double');
+					Molpy.UnlockBoost('Sandblast');
 				}
 				
 				Molpy.Add('Tickets', this.reward);
@@ -2257,7 +2282,9 @@ Molpy.Up = function() {
 		Molpy.TaggedLoot = [];
 		Molpy.UnlockedPrizes = [];
 		
+		//Currently Unused
 		Molpy.BuildPrizeList = function () {
+			Molpy.UnlockedPrizes = [];
 			for(var i in Molpy.Boosts) {
 				var me = Molpy.Boosts[i];
 				if(me.unlocked && me.group == 'prize') Molpy.UnlockedPrizes.push(me);
@@ -2442,7 +2469,7 @@ Molpy.Up = function() {
 					var red = GLRschoice(availRewards);
 					if(!Molpy.IsFree(red.CalcPrice(red.price))) {
 						if(!Molpy.boostSilence) Molpy.Notify('The DoRD has produced:', 1);
-						Molpy.UnlockBoost(red.alias, 1);
+						Molpy.UnlockBoost(red.alias);
 					} else {
 						if(!Molpy.boostSilence) Molpy.Notify('The DoRD has provided:', 1);
 						Molpy.GiveTempBoost(red.alias);
@@ -3216,6 +3243,16 @@ Molpy.Up = function() {
 				Molpy.Boosts['LR'].power = MinPower;
 			else
 				Molpy.Boosts['LR'].power *= .95;
+		}
+		
+		//Unlock NP related prizes
+		var noNotify = !Molpy.Got('Tickets');
+		var absNP = Math.abs(Molpy.highestNPvisited);
+		if(absNP >= 1001) {
+			Molpy.UnlockBoost('Doubletap', noNotify);
+		}
+		if(absNP >= 2000) {
+			Molpy.UnlockBoost('GoatONG', noNotify);
 		}
 
 		Molpy.Boosts['Glass Trolling'].IsEnabled = 0;

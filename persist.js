@@ -314,7 +314,9 @@
 		          + (Molpy.highestNPvisited) + s
 		          + (Molpy.Redacted.chainCurrent) + s
 		          + (Molpy.Redacted.chainMax) + s
-		          + (Molpy.lootPerPage) + s;
+		          + (Molpy.lootPerPage) + s
+		          + (Molpy.downNP) + s
+		          + (Molpy.downCount) + s;
 		return str;
 	}
 
@@ -536,6 +538,8 @@
 			Molpy.Redacted.chainCurrent = parseFloat(pixels[14]) || 0;
 			Molpy.Redacted.chainMax = parseFloat(pixels[15]) || 0;
 			Molpy.lootPerPage = parseInt(pixels[16]) || 20;
+			Molpy.downNP = parseInt(pixels[17]) || Math.abs(Molpy.newpixNumber);
+			Molpy.downCount = parseInt(pixels[18]) || 0;
 		}
 	};
 
@@ -791,7 +795,7 @@
 		var pixels = thread.split('');
 		for( var which in Molpy.Milestones) {
 			if(pixels[0]) {
-				Molpy.Milestones[which].earned = pixels[0];
+				Molpy.Milestones[which].earned = parseInt(pixels[0]);
 				pixels.shift();
 			} else {
 				Molpy.Milestones[which].earned = 0;
@@ -1075,7 +1079,7 @@
 		if(version < 9.9) {
 			for(var i in Molpy.BadgesById) {
 				var badge = Molpy.BadgesById[i];
-				if(badge.earned && badge.reward) {
+				if(badge.isMilestone && badge.reward) {
 					Molpy.Milestone.prototype.passMilestone.call(badge);
 				}
 			}
@@ -1162,8 +1166,8 @@
 			var prizeCounts = [];
 			for(i in Molpy.Boosts) {
 				var me = Molpy.Boosts[i];
-				// Prizes and Tickets persist except on coma even without a bag
-				if(!coma && (me.group == 'prize' || me.name == 'Tickets')) continue;
+				// Prizes and Tickets persist except on coma *even without a bag* EXCEPT for Bag of Holding
+				if(!coma && ( (me.group == 'prize' || me.name == 'Tickets') && me.name != 'Bag of Holding')) continue;
 				if(boh && me.group == 'stuff') {
 					if(!isFinite(me.Level))
 						me.Level = maxKeep;
@@ -1201,9 +1205,40 @@
 			Molpy.AdjustFade();
 			Molpy.UpdateColourScheme();
 			Molpy.BuildLootLists();
+			
+			//Only count the MD if at least 5 NP have passed since last MD
+			if(Molpy.downNP <= Math.abs(Molpy.newpixNumber) - 5) Molpy.downCount ++;			
+			Molpy.downNP = Math.abs(Molpy.newpixNumber);
+			
 			coma || _gaq && _gaq.push(['_trackEvent', 'Molpy Down', 'Complete', '' + Molpy.highestNPvisited]);
+			
+			Molpy.unlockPrizesOnDown();
 		}
 	}
+	
+	Molpy.unlockPrizesOnDown = function() {
+		// Hide notification if prizes aren't available yet
+		var noNotify = !Molpy.Got('Tickets');
+		if(Moply.downCount >= 1) {
+			Molpy.UnlockBoost('Doubletap', noNotify);
+		}
+		if(Molpy.downCount >= 2) {
+			Molpy.UnlockBoost('Spare Tools', noNotify);
+		}
+		if(Molpy.downCount >= 3) {
+			Molpy.UnlockBoost('Factory Expansion', noNotify);
+		}
+		if(Molpy.downCount >= 4) {
+			Molpy.UnlockBoost('BoM', noNotify);
+		}
+		if(Molpy.downCount >= 6) {
+			Molpy.UnlockBoost('BoF', noNotify);
+		}
+		if(Molpy.downCount >= 8) {
+			Molpy.UnlockBoost('BoJ', noNotify);
+		}
+	}
+	
 	Molpy.Coma = function() {
 		if(confirm('Really coma?\n(This will wipe all progress and badges!)')
 			&& confirm('Seriously, this will reset ALL the things.\nAre you ABSOLUTELY sure?')) {
@@ -1212,6 +1247,8 @@
 			Molpy.Down(1);
 			Molpy.saveCount = 0;
 			Molpy.loadCount = 0;
+			Molpy.downNP = 1;
+			Molpy.downCount = 0;
 			Molpy.DefaultOptions();
 			var highest = Molpy.highestNPvisited;
 			Molpy.highestNPvisited = 0;

@@ -271,6 +271,13 @@ Molpy.DefineCastleTools = function() {
 			if(Molpy.Got('Chequered Flag')) ninjaFactor += 0.2;
 			this.ninjaTime = this.baseNinjaTime / ninjaFactor;
 			if(Molpy.IsEnabled('Western Paradox')) this.ninjaTime *= 3;
+		},
+		
+		buyFunction: function() {
+			//Probably never used since this will be after tool factory, but just in case it somehow is
+			if(this.bought >= 1e10) {
+				Molpy.UnlockBoost('Factory Expansion');
+			}
 		}
 	});
 

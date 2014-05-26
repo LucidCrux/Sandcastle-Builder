@@ -334,6 +334,11 @@ Molpy.DefineBoosts = function() {
 			Sand: 23456,
 			Castles: 78
 		},
+		
+		unlockFunction: function() {
+			var noNotify = !Molpy.Got('Tickets');
+			Molpy.UnlockBoost('Double Department', noNotify);
+		}
 	});
 	new Molpy.Boost({
 		name: 'Raise the Flag',
@@ -1424,6 +1429,15 @@ Molpy.DefineBoosts = function() {
 			if(me.power <= 20) return 'Speed is at ' + me.power + ' out of 20';
 			if(me.power <= 88) return 'Speed is at ' + me.power + ' out of 88';
 			return 'Speed is at ' + Molpify(me.power);
+		},
+		
+		AddSuper: Molpy.BoostFuncs.Add,
+		Add: function(amount) {
+			this.AddSuper(amount);
+			if(this.power >= 100) {
+				var noNotify = !Molpy.Got('Tickets');
+				Molpy.UnlockBoost('Short Saw', noNotify);
+			}			
 		},
 		
 		getReward: function(includeNinja) {
@@ -5066,6 +5080,10 @@ Molpy.DefineBoosts = function() {
 			if(built >= 1e24) Molpy.EarnBadge('YottaTool');
 			if(built >= 1e42) Molpy.EarnBadge('WololoTool');
 			if(built >= 1e84) Molpy.EarnBadge('WololoWololoTool');
+			
+			if(!Molpy.Boosts('Factory Expansion').unlocked && Molpy.CastleTools[NewPixBot].bought >= 1e10) {
+				Molpy.UnlockBoost('Factory Expansion');
+			}
 		}
 		
 		if(!acPower) return;
@@ -6037,6 +6055,10 @@ Molpy.DefineBoosts = function() {
 			Castles: Infinity,
 			GlassBlocks: '100M',
 		},
+
+		buyFunction: function() {
+			Molpy.UnlockBoost('Mould Press', noNotify);
+		}
 	});
 	new Molpy.Boost({
 		name: 'Mysterious Representations',
@@ -6607,6 +6629,19 @@ Molpy.DefineBoosts = function() {
 				Molpy.UnlockBoost('RDKM');
 				Molpy.Boosts['CDSP'].Refresh();
 			};
+			if(this.Level >= 77,777) {
+				var noNotify = !Molpy.Got('Tickets');
+				Molpy.UnlockBoost('GoatONG', noNotify);
+			} 
+		},
+		
+		unlockFunction: function() {
+			// Hide prize unlock notification when the prize shop hasn't been earned yet
+			var noNotify = !Molpy.Got('Tickets');
+			Molpy.UnlockBoost('Gruff', noNotify);
+			if(Molpy.Got('Glass Furnace') && Molpy.Got('Glass Blower')) {
+				Molpy.UnlockBoost('Glass Goat', noNotify);
+			}
 		},
 		
 		
@@ -7541,6 +7576,11 @@ Molpy.DefineBoosts = function() {
 			var str = 'You have ' + Molpify(me.Level, 3) + ' Bonemeal.';
 			return str;
 		},
+		
+		unlockFunction: function() {
+			Molpy.UnlockBoost('Bone Clicker');
+		},
+		
 		defStuff: 1
 	});
 	new Molpy.Boost({
@@ -7607,6 +7647,13 @@ Molpy.DefineBoosts = function() {
 			this.AddSuper(amount);
 			if(!Molpy.Boosts['Mustard Sale'].unlocked && Molpy.Got(this.alias, 2000)) {
 				Molpy.UnlockBoost('Mustard Sale');
+				Molpy.UnlockBoost('Mustard Injector');
+			}
+			if(!Molpy.Boosts['Crunchy with Mustard'].unlocked && Molpy.Got(this.alias, 5000)) {
+				Molpy.UnlockBoost('Crunchy with Mustard');
+			}
+			if(!Molpy.Boosts['Eww'].unlocked && Molpy.Got(this.alias, 10000)) {
+				Molpy.UnlockBoost('Eww');
 			}
 			return amount;
 		},
@@ -8528,8 +8575,9 @@ Molpy.DefineBoosts = function() {
 		className: 'action',
 		
 		desc: function(me) {
-			return 'Pay 5K Mustard to reset your ' + Molpy.Redacted.word + ' click count to 0 and gain 1 Bonemeal per 20'
-				+ (me.bought ? '<br><input type="Button" onclick="Molpy.Boosts[\'Crunch\'].crunch()" value="Use"></input>' : '');
+			return 'Pay 5K Mustard to chop your ' + Molpy.Redacted.word + ' click count in half and gain 3 Bonemeal per 20 clicks.'
+			    + '<br>(Requires at least 5000 clicks)'
+				+ ((me.bought && Molpy.Redacted.totalClicks >= 5000) ? '<br><input type="Button" onclick="Molpy.Boosts[\'Crunch\'].crunch()" value="Use"></input>' : '');
 		},
 		
 		price: {
@@ -8541,9 +8589,14 @@ Molpy.DefineBoosts = function() {
 		tier: 3,
 		
 		crunch: function() {
+			//Shouldn't happen, but just in case
+			if(Molpy.Redacted.totalClicks < 5000) {
+				Molpy.Notify('Anything less than 5000 isn\'t crunchy enough!');
+				return;
+			}
 			if(Molpy.Spend('Mustard', 5000)) {
-				Molpy.Add('Bonemeal', Math.floor(Molpy.Redacted.totalClicks / 20));
-				Molpy.Redacted.totalClicks = 0;
+				Molpy.Add('Bonemeal', Math.floor(Molpy.Redacted.totalClicks / 2 / 20) * 3);
+				Molpy.Redacted.totalClicks /= 2;
 				Molpy.Notify('Crunch!');
 			}
 		}
@@ -8556,7 +8609,7 @@ Molpy.DefineBoosts = function() {
 		group: 'prize',
 		className: 'alert',
 		desc: function() {
-			return 'Mould Boosts (apart from Prizes) aren\'t reset when you Molpy Down, at a cost of 100 Bonemeal.' +
+			return 'Mould Boosts aren\'t reset when you Molpy Down, at a cost of 100 Bonemeal.' +
 				'<br>Capacity of Bag of Holding is multiplied by ' + Molpify(1e42)
 		},
 			
@@ -8583,7 +8636,7 @@ Molpy.DefineBoosts = function() {
 		group: 'prize',
 		className: 'alert',		
 		desc: function() {
-			return 'Toggle Boosts (apart from Prizes, Glass Furnace, and Glass Blower) aren\'t reset when you Molpy Down, ' +
+			return 'Toggle Boosts (apart from Glass Furnace and Glass Blower) aren\'t reset when you Molpy Down, ' +
 				'at a cost of 1000 Bonemeal.<br>Capacity of Bag of Holding is multiplied by ' + Molpify(1e42)
 		},
 			
@@ -8664,6 +8717,14 @@ Molpy.DefineBoosts = function() {
 				if (this.bought >= 50) Molpy.UnlockBoost('Flux Harvest');
 				if (this.bought > 1000) Molpy.UnlockBoost('Fertiliser');
 			}
+			if(this.Level >= 2){
+				var noNotify = !Molpy.Got('Tickets');
+				Molpy.UnlockBoost('Doubletap', noNotify);
+			}
+			if(this.Level >= 422){
+				var noNotify = !Molpy.Got('Tickets');
+				Molpy.UnlockBoost('BoJ', noNotify);
+			}
 		},
 		
 		IsEnabled: [function() {
@@ -8706,6 +8767,23 @@ Molpy.DefineBoosts = function() {
 		desc: function(me) {
 			var str = 'You have ' + Molpify(me.Level, 3) + ' Flux Crystal' + plural(me.Level) + '.';
 			return str;
+		},
+		
+		AddSuper : Molpy.BoostFuncs.Add,
+		Add: function(amount) {
+			this.AddSuper(amount);
+			if(this.power >= 50) {
+				var noNotify = !Molpy.Got('Tickets');
+				Molpy.UnlockBoost('Doubletap', noNotify);
+			}
+			if(this.power >= 500) {
+				var noNotify = !Molpy.Got('Tickets');
+				Molpy.UnlockBoost('Crystal Memories', noNotify);
+			}
+			if(this.power >= 2000) {
+				var noNotify = !Molpy.Got('Tickets');
+				Molpy.UnlockBoost('Twice Tools', noNotify);
+			}
 		},
 		
 		defStuff: 1
@@ -10231,7 +10309,8 @@ Molpy.DefineBoosts = function() {
 		desc: function(me) {
 			var str = 'You have ' + Molpify(me.Level, 3) + ' ticket' + plural(me.Level) + '.'
 			        + '<br><br>These are earned by reaching certain milestones in the game. Some milestones '
-			        + 'are rewarded every Molpy Down, others are rewarded only once.';
+			        + 'are rewarded every Molpy Down, others are rewarded only once.'
+			        + '<br><br>Tickets and most Prizes DO NOT reset on Molpy Down unlike other boosts.';
 			return str;
 		},
 		
