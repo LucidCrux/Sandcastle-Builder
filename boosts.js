@@ -1431,13 +1431,9 @@ Molpy.DefineBoosts = function() {
 			return 'Speed is at ' + Molpify(me.power);
 		},
 		
-		AddSuper: Molpy.BoostFuncs.Add,
-		Add: function(amount) {
-			this.AddSuper(amount);
-			if(this.power >= 100) {
-				var noNotify = !Molpy.Got('Tickets');
-				Molpy.UnlockBoost('Short Saw', noNotify);
-			}			
+		buyFunction: function() {
+			var noNotify = !Molpy.Got('Tickets');
+			Molpy.UnlockBoost('Short Saw', noNotify);	
 		},
 		
 		getReward: function(includeNinja) {
@@ -1869,6 +1865,16 @@ Molpy.DefineBoosts = function() {
 			Sand: '80M',
 			Castles: '0.5M'
 		},
+		
+		buyFunction: function() {
+			var noNotify = !Molpy.Got('Tickets');
+			if(Molpy.Got('Glass Blower')) {
+				Molpy.UnlockBoost('Lubrication', noNotify);
+				if(Molpy.Got('Goats')) {
+					Molpy.UnlockBoost('Glass Goat', noNotify);
+				}
+			}
+		},
 	});
 	new Molpy.Boost({
 		name: 'Glass Furnace Switching',
@@ -2297,7 +2303,17 @@ Molpy.DefineBoosts = function() {
 
 		},
 		
-		IsEnabled: Molpy.BoostFuncs.BoolPowEnabled
+		IsEnabled: Molpy.BoostFuncs.BoolPowEnabled,
+		
+		buyFunction: function() {
+			var noNotify = !Molpy.Got('Tickets');
+			if(Molpy.Got('Glass Furnace')) {
+				Molpy.UnlockBoost('Lubrication', noNotify);
+				if(Molpy.Got('Goats')) {
+					Molpy.UnlockBoost('Glass Goat', noNotify);
+				}
+			}
+		},
 	});
 	new Molpy.Boost({
 		name: 'Glass Blower Switching',
@@ -3969,6 +3985,13 @@ Molpy.DefineBoosts = function() {
 			Castles: '20P',
 			GlassBlocks: '20K'
 		},
+		
+		buyFunction: function() {
+			if(Molpy.Got('FluxCrystals')) {
+				var noNotify = !Molpy.Got('Tickets');
+				Molpy.UnlockBoost('Crystal Memories', noNotify);
+			}
+		}
 	});
 	new Molpy.Boost({
 		name: 'Blackprints',
@@ -5080,10 +5103,6 @@ Molpy.DefineBoosts = function() {
 			if(built >= 1e24) Molpy.EarnBadge('YottaTool');
 			if(built >= 1e42) Molpy.EarnBadge('WololoTool');
 			if(built >= 1e84) Molpy.EarnBadge('WololoWololoTool');
-			
-			if(!Molpy.Boosts('Factory Expansion').unlocked && Molpy.CastleTools[NewPixBot].bought >= 1e10) {
-				Molpy.UnlockBoost('Factory Expansion');
-			}
 		}
 		
 		if(!acPower) return;
@@ -6036,13 +6055,23 @@ Molpy.DefineBoosts = function() {
 		name: 'Seaish Glass Chips',
 		icon: 'seaishglasschips',
 		desc: 'Allows Sand Purifier and Sand Refinery (using chips only) to increase as far as your resources allow',
-		price:{ GlassBlocks: '100K' }
+		price:{ GlassBlocks: '100K' },
+		
+		buyFunction: function() {
+			var noNotify = !Molpy.Got('Tickets');
+			if(Molpy.Got('Seaish Glass Blocks')) Molpy.UnlockBoost('Riser', noNotify);
+		}
 	});
 	new Molpy.Boost({
 		name: 'Seaish Glass Blocks',
 		icon: 'seaishglassblocks',
 		desc: 'Allows Glass Extruder and Glass Chiller to increase as far as your resources allow',
-		price:{ GlassBlocks: '100K' }
+		price:{ GlassBlocks: '100K' },
+		
+		buyFunction: function() {
+			var noNotify = !Molpy.Got('Tickets');
+			if(Molpy.Got('Seaish Glass Chips')) Molpy.UnlockBoost('Riser', noNotify);
+		}
 	});
 	new Molpy.Boost({
 		name: 'Automata Engineers',
@@ -6057,7 +6086,9 @@ Molpy.DefineBoosts = function() {
 		},
 
 		buyFunction: function() {
+			var noNotify = !Molpy.Got('Tickets');
 			Molpy.UnlockBoost('Mould Press', noNotify);
+			Molpy.UnlockBoost('Factory Expansion', noNotify);
 		}
 	});
 	new Molpy.Boost({
@@ -6070,6 +6101,11 @@ Molpy.DefineBoosts = function() {
 			Sand: Infinity,
 			Castles: Infinity,
 			GlassBlocks: '500M',
+		},
+		
+		buyFunction: function() {
+			var noNotify = !Molpy.Got('Tickets');
+			Molpy.UnlockBoost('Rush Job', noNotify);	
 		},
 	});
 	new Molpy.Boost({
@@ -6629,19 +6665,19 @@ Molpy.DefineBoosts = function() {
 				Molpy.UnlockBoost('RDKM');
 				Molpy.Boosts['CDSP'].Refresh();
 			};
-			if(this.Level >= 77,777) {
+			if(this.Level >= 7,777) {
 				var noNotify = !Molpy.Got('Tickets');
 				Molpy.UnlockBoost('GoatONG', noNotify);
 			} 
 		},
 		
 		unlockFunction: function() {
-			// Hide prize unlock notification when the prize shop hasn't been earned yet
 			var noNotify = !Molpy.Got('Tickets');
 			Molpy.UnlockBoost('Gruff', noNotify);
 			if(Molpy.Got('Glass Furnace') && Molpy.Got('Glass Blower')) {
 				Molpy.UnlockBoost('Glass Goat', noNotify);
 			}
+			if(Molpy.Got('FluxCrystals')) Molpy.UnlockBoost('Void Goat', noNotify);
 		},
 		
 		
@@ -6914,6 +6950,11 @@ Molpy.DefineBoosts = function() {
 		},
 		
 		price:{ GlassBlocks: '12WW' },
+		
+		buyFunction: function() {
+			var noNotify = !Molpy.Got('Tickets');
+			Molpy.UnlockBoost('Soul Drain', noNotify);	
+		},
 		
 		// deactivate if not enough logicats
 		classChange: function() { return ((Molpy.Level('AC') > 2000) || (Molpy.Got('LogiPuzzle') && Molpy.Has('LogiPuzzle', 100))) ? 'action' : '' },
@@ -7579,6 +7620,7 @@ Molpy.DefineBoosts = function() {
 		
 		unlockFunction: function() {
 			Molpy.UnlockBoost('Bone Clicker');
+			if(Molpy.Got('Mustard')) Molpy.UnlockBoost('Eww');
 		},
 		
 		defStuff: 1
@@ -7652,7 +7694,7 @@ Molpy.DefineBoosts = function() {
 			if(!Molpy.Boosts['Crunchy with Mustard'].unlocked && Molpy.Got(this.alias, 5000)) {
 				Molpy.UnlockBoost('Crunchy with Mustard');
 			}
-			if(!Molpy.Boosts['Eww'].unlocked && Molpy.Got(this.alias, 10000)) {
+			if(!Molpy.Boosts['Eww'].unlocked && Molpy.Got('Bonemeal')) {
 				Molpy.UnlockBoost('Eww');
 			}
 			return amount;
@@ -8717,10 +8759,6 @@ Molpy.DefineBoosts = function() {
 				if (this.bought >= 50) Molpy.UnlockBoost('Flux Harvest');
 				if (this.bought > 1000) Molpy.UnlockBoost('Fertiliser');
 			}
-			if(this.Level >= 2){
-				var noNotify = !Molpy.Got('Tickets');
-				Molpy.UnlockBoost('Doubletap', noNotify);
-			}
 			if(this.Level >= 422){
 				var noNotify = !Molpy.Got('Tickets');
 				Molpy.UnlockBoost('BoJ', noNotify);
@@ -8751,6 +8789,11 @@ Molpy.DefineBoosts = function() {
 			}
 			return str;
 		},
+		
+		unlockFunction: function() {
+			var noNotify = !Molpy.Got('Tickets');
+			Molpy.UnlockBoost('Fast Forward', noNotify);
+		},
 
 		classChange: function() { return isFinite(this.bought) ? 'action': ''},
 
@@ -8769,21 +8812,13 @@ Molpy.DefineBoosts = function() {
 			return str;
 		},
 		
-		AddSuper : Molpy.BoostFuncs.Add,
-		Add: function(amount) {
-			this.AddSuper(amount);
-			if(this.power >= 50) {
-				var noNotify = !Molpy.Got('Tickets');
-				Molpy.UnlockBoost('Doubletap', noNotify);
-			}
-			if(this.power >= 500) {
-				var noNotify = !Molpy.Got('Tickets');
-				Molpy.UnlockBoost('Crystal Memories', noNotify);
-			}
-			if(this.power >= 2000) {
-				var noNotify = !Molpy.Got('Tickets');
-				Molpy.UnlockBoost('Twice Tools', noNotify);
-			}
+		unlockFunction: function() {
+			var noNotify = !Molpy.Got('Tickets');
+			Molpy.UnlockBoost('Crystal Memories', noNotify);
+			Molpy.UnlockBoost('Twice Tools', noNotify);
+			
+			if(Molpy.Got('Goats')) Molpy.UnlockBoost('Void Goat', noNotify);
+			if(Molpy.Got('Memories Revisited')) Molpy.UnlockBoost('Crystal Memories', noNotify);
 		},
 		
 		defStuff: 1

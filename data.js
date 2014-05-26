@@ -662,6 +662,10 @@ Molpy.CheckBuyUnlocks = function(tool) {
 
 	if(Molpy.Has('GlassBlocks', 7016280)) Molpy.EarnBadge('Pyramid of Giza');
 	if(Molpy.Has('GlassChips', 640000)) Molpy.EarnBadge('Personal Computer');
+	if(!isFinite(Molpy.Boosts['GlassBlocks'].Level)) {
+		var noNotify = !Molpy.Got('Tickets');
+		Molpy.UnlockBoost('Glass Trolling', noNotify);
+	}
 
 	var upLevel = (Molpy.Got('Riser') ? 1 : 500);
 	if(Molpy.Boosts['Sand Purifier'].power > upLevel) Molpy.UnlockBoost('Seaish Glass Chips');

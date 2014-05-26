@@ -1093,6 +1093,11 @@
 		if(coma || Molpy.confirmMolpyDown()) {
 
 			coma || _gaq && _gaq.push(['_trackEvent', 'Molpy Down', 'Begin', '' + Molpy.newpixNumber]);
+			
+			//Only count the MD if at least 5 NP have passed since last MD
+			//Also determines if milestones get reset to earn again or not
+			var validDown = (Molpy.downNP <= Math.abs(Molpy.highestNPvisited) - 5) ? false : true;
+			
 			Molpy.Boosts['Sand'].totalDug = 0;
 			Molpy.Boosts['Sand'].manualDug = 0;
 			Molpy.Boosts['TF'].manualLoaded = 0;
@@ -1154,6 +1159,12 @@
 			for(i in Molpy.CastleTools) {
 				Molpy.CastleToolsOwned += Molpy.CastleTools[i].amount;
 			}
+			//Only reset repeatable milestones in a valid Molpy Down to help prevent quickly repeating easier milestones
+			if(coma || validDown) {
+				for(var which in Molpy.Milestones) {
+					Molpy.Milestones[which].earned = 0;
+				}
+			}
 			
 			var boh = !coma && Molpy.Got('BoH') && Molpy.Spend('Bonemeal', 10);
 			var bom = !coma && Molpy.Got('BoM') && Molpy.Spend('Bonemeal', 100);
@@ -1206,8 +1217,7 @@
 			Molpy.UpdateColourScheme();
 			Molpy.BuildLootLists();
 			
-			//Only count the MD if at least 5 NP have passed since last MD
-			if(Molpy.downNP <= Math.abs(Molpy.highestNPvisited) - 5) Molpy.downCount ++;			
+			if(validDown) Molpy.downCount ++;			
 			Molpy.downNP = Math.abs(Molpy.highestNPvisited);
 			
 			coma || _gaq && _gaq.push(['_trackEvent', 'Molpy Down', 'Complete', '' + Molpy.highestNPvisited]);
@@ -1219,15 +1229,6 @@
 	Molpy.unlockPrizesOnDown = function() {
 		// Hide notification if prizes aren't available yet
 		var noNotify = !Molpy.Got('Tickets');
-		if(Molpy.downCount >= 1) {
-			Molpy.UnlockBoost('Doubletap', noNotify);
-		}
-		if(Molpy.downCount >= 2) {
-			Molpy.UnlockBoost('Spare Tools', noNotify);
-		}
-		if(Molpy.downCount >= 3) {
-			Molpy.UnlockBoost('Factory Expansion', noNotify);
-		}
 		if(Molpy.downCount >= 4) {
 			Molpy.UnlockBoost('BoM', noNotify);
 		}
@@ -1242,7 +1243,9 @@
 	Molpy.confirmMolpyDown = function() {
 		var msg = '!!! WARNING !!! Your progress will be reset but achievements will not.';
 		if(Molpy.downNP > Math.abs(Molpy.highestNPvisited) - 5) {
-			msg += '\nAlso, because you have not progressed at least 5 NewPix,\nthis will not count towards your Molpy Down total.';
+			msg += '\nAlso, because you have not progressed at least 5 NewPix,'
+				+ '\nthis will not count towards your Molpy Down total'
+				+ '\nand repeatable milestones will not be reset. ';
 		}
 		msg += '\n\nDo you still want to Molpy Down?';
 		

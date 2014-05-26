@@ -519,7 +519,6 @@ Molpy.Up = function() {
 			}
 			if(Molpy.mustardTools == 12) Molpy.EarnBadge('Mustard Tools');
 			if(Molpy.mustardTools >= 1) {
-				Molpy.UnlockBoost('Spare Tools');
 				Molpy.UnlockBoost('Mustard Automation');
 			}
 		};
@@ -1925,16 +1924,10 @@ Molpy.Up = function() {
 								Molpy.ShowGroup(baby.group, baby.className);
 						}
 						
-						if(!Molpy.Boosts['Archimedes'].unlocked && (baby.group == 'monumg' || baby.group == 'momums')) {
-							if((Molpy.groupBadgeCounts['monumg'] + Molpy.groupBadgeCounts['monums']) >= 250) {
-								var noNotify = !Molpy.Got('Tickets');
-								Molpy.UnlockBoost('Archimedes', noNotify);
-							}
-						}
-						
-						if(!Molpy.Boosts['BoM'].unlocked && baby.group == 'monumg') {
-							if(Molpy.groupBadgeCounts['monumg'] >= 200) {
-								var noNotify = !Molpy.Got('Tickets');
+						if(baby.group == 'monumg') {
+							var noNotify = !Molpy.Got('Tickets');
+							Molpy.UnlockBoost('Archimedes', noNotify);
+							if(!Molpy.Boosts['BoM'].unlocked && Molpy.groupBadgeCounts['monumg'] >= 50) {
 								Molpy.UnlockBoost('BoM', noNotify);
 							}
 						}
@@ -1980,9 +1973,10 @@ Molpy.Up = function() {
 					Molpy.UnlockBoost('Tickets');
 					Molpy.Boosts['Tickets'].buy();
 					
-					//Have at least a few prizes available no matter what
-					Molpy.UnlockBoost('Single Double');
-					Molpy.UnlockBoost('Sandblast');
+					Molpy.UnlockBoost('Spare Tools', 1);
+					Molpy.UnlockBoost('Doubletap', 1);
+					Molpy.UnlockBoost('Single Double', 1);
+					Molpy.UnlockBoost('Sandblast', 1);
 				}
 				
 				Molpy.Add('Tickets', this.reward);
@@ -3251,8 +3245,17 @@ Molpy.Up = function() {
 		if(absNP >= 1001) {
 			Molpy.UnlockBoost('Doubletap', noNotify);
 		}
+		if(absNP >= 1234) {
+			Molpy.UnlockBoost('Musical Chairs', noNotify);
+		}
+		if(absNP >= 1500) {
+			Molpy.UnlockBoost('Musical Chairs', noNotify);
+		}
 		if(absNP >= 2000) {
-			Molpy.UnlockBoost('GoatONG', noNotify);
+			Molpy.UnlockBoost('BoF', noNotify);
+		}
+		if(absNP >= 3089) {
+			Molpy.UnlockBoost('Month', noNotify);
 		}
 
 		Molpy.Boosts['Glass Trolling'].IsEnabled = 0;
@@ -3292,7 +3295,13 @@ Molpy.Up = function() {
 
 	Molpy.HandlePeriods = function() {
 		//check length of current newpic
-		if(Molpy.newpixNumber < 0) Molpy.EarnBadge('Minus Worlds');
+		if(Molpy.newpixNumber < 0) {
+			Molpy.EarnBadge('Minus Worlds');
+			if(Molpy.Got('FluxCrystals')) {
+				var noNotify = !Molpy.Got('Tickets');
+				Molpy.UnlockBoost('Negator', noNotify);
+			}
+		}
 		var np = Math.abs(Molpy.newpixNumber);
 		if(np <= 240) {
 			Molpy.NPlength = 1800;
