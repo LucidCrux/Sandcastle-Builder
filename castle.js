@@ -556,8 +556,30 @@ Molpy.Up = function() {
 			this.amount = 0;
 			this.bought = 0;
 			this.temp = 0;
-
-			this.buy = function() {
+			
+			// Create CSS style for tool
+			if(this.gifIcon){
+				addCSSRule(document.styleSheets[1], '.darkscheme .tool_' + this.icon + '.icon', "background-image:url('img/tool_" + this.icon + "_light_icon.gif' )");
+				addCSSRule(document.styleSheets[1], '.lightscheme .tool_' + this.icon + '.icon', "background-image:url('img/tool_" + this.icon + "_dark_icon.gif' )");
+			} else if(this.icon) {
+				addCSSRule(document.styleSheets[1], '.darkscheme .tool_' + this.icon + '.icon', "background-image:url('img/tool_" + this.icon + "_light_icon.png' )");
+				addCSSRule(document.styleSheets[1], '.lightscheme .tool_' + this.icon + '.icon', "background-image:url('img/tool_" + this.icon + "_dark_icon.png' )");
+			}
+			if(this.heresy){
+				addCSSRule(document.styleSheets[1], '.darkscheme.heresy .tool_' + this.icon + '.icon', "background-image:url('img/tool_" + this.icon + "_light_heresy_icon.png' )");
+				addCSSRule(document.styleSheets[1], '.lightscheme.heresy .tool_' + this.icon + '.icon', "background-image:url('img/tool_" + this.icon + "_dark_heresy_icon.png' )");
+			}
+			
+			Molpy.SandTools[this.name] = this;
+			Molpy.SandToolsById[this.id] = this;
+			
+			Molpy.SandToolsN++;
+			
+			return this;
+		};
+		
+		$.extend(Molpy.Sandtool.prototype, {
+			buy: function() {
 				Molpy.Anything = 1;
 				if(Molpy.ProtectingPrice()) return;
 				var times = Math.pow(4, Molpy.options.sandmultibuy);
@@ -597,9 +619,9 @@ Molpy.Up = function() {
 						+ Molpify(bought, 3) + ' ' + (bought > 1 ? this.plural : this.single), 1);
 					_gaq && _gaq.push(['_trackEvent', 'Buy Tool', this.name, '' + bought]);
 				}
-			};
+			},
 			
-			this.create = function(n) {
+			create: function(n) {
 				this.amount += n;
 				this.bought += n;
 				Molpy.SandToolsOwned += n;
@@ -611,9 +633,9 @@ Molpy.Up = function() {
 					Molpy.SandToolsOwned += dups;
 				}
 				return this;
-			};
+			},
 			
-			this.sell = function() {
+			sell: function() {
 				Molpy.Anything = 1;
 				if(this.amount > 0) {
 					this.amount--;
@@ -637,9 +659,9 @@ Molpy.Up = function() {
 					Molpy.UnlockBoost('No Sell');
 					Molpy.CheckBuyUnlocks(1);
 				}
-			};
+			},
 			
-			this.destroyTemp = function() {
+			destroyTemp: function() {
 				var cost = this.temp * 5;
 				if(Molpy.Has('GlassBlocks', cost)) {
 					Molpy.Spend('GlassBlocks', cost);
@@ -653,59 +675,59 @@ Molpy.Up = function() {
 					Molpy.CheckDragon();
 					Molpy.MustardCheck();
 				}
-			};
+			},
 			
-			this.isAffordable = function() {
+			isAffordable: function() {
 
 				if(Molpy.ProtectingPrice()) return 0;
 				var price = Math.floor(Molpy.priceFactor * this.basePrice * Math.pow(Molpy.sandToolPriceFactor, this.amount));
 				return isFinite(price) && Molpy.Has('Castles', price);
-			};
+			},
 			
-			this.Refresh = function() {
+			Refresh: function() {
 				Molpy.toolsNeedRepaint = 1;
 				Molpy.RatesRecalculate();
 				this.findPrice();
 				if(this.drawFunction) this.drawFunction();
-			};
+			},
 			
-			this.findPrice = function() {
+			findPrice: function() {
 				if(this.amount > 9000)
 					this.price = Infinity;
 				else
 					this.price = Math.floor(this.basePrice * Math.pow(Molpy.sandToolPriceFactor, this.amount));
-			};
+			},
 			
 			// Methods for Div Creation
-			this.getFullClass = function() {
+			getFullClass: function() {
 				return 'floatbox tool sand shop';
-			}
+			},
 			
-			this.getHeading = function() {return '';}
+			getHeading: function() {return '';},
 			
-			this.getFormattedName = function() {
+			getFormattedName: function() {
 				var fname = '' + format(this.name);
 				if(isNaN(this.amount))
 					fname = 'Mustard ' + fname;
 				else if(Molpy.Got('Glass Ceiling ' + (this.id * 2)))
 					fname = 'Glass ' + fname;
 				return fname;
-			};
+			},
 			
-			this.getOwned = function() {
+			getOwned: function() {
 				return Molpify(this.amount, 3);
-			}
+			},
 			
-			this.getPrice = function() {
+			getPrice: function() {
 				var price = '';
 				if(isFinite(Molpy.priceFactor * this.price) || !Molpy.Got('TF') || !Molpy.Got('Glass Ceiling ' + this.id * 2))
 					price = {Castles: (Math.floor(EvalMaybeFunction(this.price, this, 1) * Molpy.priceFactor))};
 				else if(!isNaN(this.price))
 					price = {GlassChips: 1000 * (this.id * 2 + 1)};
 				return price;
-			}
+			},
 			
-			this.getBuySell = function() {
+			getBuySell: function() {
 				var numBuy = Math.pow(4, Molpy.options.sandmultibuy);
 				var noBuy = this.isAffordable() ? '' : ' unbuyable';
 				var buysell = '';
@@ -714,9 +736,9 @@ Molpy.Up = function() {
 						+ numBuy + '</a>' + (Molpy.Boosts['No Sell'].power ? '' : ' <a class="sellSpan" onclick="Molpy.SandToolsById[' + this.id + '].sell();">Sell</a>');
 				}
 				return buysell;
-			}
+			},
 			
-			this.getProduction = function() {
+			getProduction: function() {
 				var production = '';
 				if(isNaN(this.amount))
 					production = 'Mustard/click: ' + Molpify((Molpy.Got('Cress')&&Molpy.IsEnabled('Cress')) ? (Molpy.Boosts['Goats'].power/1000) : 1 , 3);
@@ -726,9 +748,9 @@ Molpy.Up = function() {
 					production = 'Sand/mNP: ' + Molpify(this.storedTotalSpmNP, (this.storedTotalSpmNP < 10 ? 3 : 1));
 				
 				return production;				
-			}
+			},
 			
-			this.getDesc = function() {
+			getDesc: function() {
 				var desc = '';
 				if(Molpy.IsStatsVisible()) {
 					if(isFinite(Molpy.priceFactor * this.price) || !Molpy.Got('TF')
@@ -748,13 +770,13 @@ Molpy.Up = function() {
 				}
 				
 				return desc;
-			}
+			},
 			
 			// Args:
 			//    forceNew (T/F): force recreation of the object's div
 			//    hover (T/F): add hover mechanics to the div
 			//    nohide (T/F): don't automatically hide the description when the div is created, useful for clicking a div's buttons
-			this.getDiv = function(args) {
+			getDiv: function(args) {
 				if(this.divElement) {
 					if(!args.forceNew)
 						return this.divElement;
@@ -762,16 +784,16 @@ Molpy.Up = function() {
 				}
 				this.divElement = Molpy.newObjectDiv('tool', this, {hover: (args.hover || false), nohide: (args.nohide || false)});
 				return this.divElement;
-			}
+			},
 			
-			this.hasDiv = function() {
+			hasDiv: function() {
 				if(this.divElement) return true;
 				return false;
-			}
+			},
 			
 			// Methods for Div Updates
 			
-			this.repaint = function() {
+			repaint: function() {
 				if(!this.divElement) return;
 				
 				var parent = this.divElement.parent();
@@ -786,49 +808,29 @@ Molpy.Up = function() {
 				this.getDiv({forceNew: true, hover: true, nohide: nh});
 				parent.children().eq(index).before(this.divElement);
 				
-			}
+			},
 			
-			this.updateAll = function() {
+			updateAll: function() {
 				this.updateBuy();
 				this.updatePrice();
 				this.updateProduction();
-			}
+			},
 			
-			this.updateBuy = function() {
+			updateBuy: function() {
 				if(!this.divElement) return;
 				this.divElement.find('.buySpan').toggleClass('unbuyable', !this.isAffordable());
-			};
+			},
 			
-			this.updatePrice = function() {
+			updatePrice: function() {
 				if(!this.divElement) return;
 				this.divElement.find('.price').innerHTML = Molpy.createPriceHTML(this.getPrice());
-			}
+			},
 			
-			this.updateProduction = function() {
+			updateProduction: function() {
 				if(!this.divElement) return;
 				this.divElement.find('.production').innerHTML = this.getProduction();
-			}
-			
-			// Create CSS style for tool
-			if(this.gifIcon){
-				addCSSRule(document.styleSheets[1], '.darkscheme .tool_' + this.icon + '.icon', "background-image:url('img/tool_" + this.icon + "_light_icon.gif' )");
-				addCSSRule(document.styleSheets[1], '.lightscheme .tool_' + this.icon + '.icon', "background-image:url('img/tool_" + this.icon + "_dark_icon.gif' )");
-			} else if(this.icon) {
-				addCSSRule(document.styleSheets[1], '.darkscheme .tool_' + this.icon + '.icon', "background-image:url('img/tool_" + this.icon + "_light_icon.png' )");
-				addCSSRule(document.styleSheets[1], '.lightscheme .tool_' + this.icon + '.icon', "background-image:url('img/tool_" + this.icon + "_dark_icon.png' )");
-			}
-			if(this.heresy){
-				addCSSRule(document.styleSheets[1], '.darkscheme.heresy .tool_' + this.icon + '.icon', "background-image:url('img/tool_" + this.icon + "_light_heresy_icon.png' )");
-				addCSSRule(document.styleSheets[1], '.lightscheme.heresy .tool_' + this.icon + '.icon', "background-image:url('img/tool_" + this.icon + "_dark_heresy_icon.png' )");
-			}
-			
-			Molpy.SandTools[this.name] = this;
-			Molpy.SandToolsById[this.id] = this;
-			
-			Molpy.SandToolsN++;
-			
-			return this;
-		};
+			},
+		});
 
 		Molpy.CastleTool = function(args) {
 			// Assign all properties passed in
