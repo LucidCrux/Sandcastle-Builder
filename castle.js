@@ -1796,96 +1796,6 @@ Molpy.Up = function() {
 			this.group = args.group || 'badges';
 			this.icon = args.icon || Molpy.groupNames[this.group][2];
 
-			// Methods
-			this.Refresh = function() {
-				this.faveRefresh = 1;
-			};
-			
-			this.GetAlias = function() {
-				if((this.earned || this.visibility < 1) && Molpy.IsStatsVisible() && this.name != this.alias) {
-					return '<br>(Alias: ' + this.alias + ')';
-				}
-				return '';
-			};
-			
-			this.HasUpgrade = function() {
-				if(this.np) {
-					var nGroup = Molpy.nextBageGroup[this.group];
-					var nBadge = Molpy.Badges[nGroup + this.np];
-					if(nBadge && !nBadge.earned) {
-						return true;
-					}
-				}
-			};
-			
-			// Methods for Div Creation
-			this.getFullClass = function() {
-				var cn = 'badge lootbox ' + (this.earned ? 'loot ' : 'shop ') + (this.className || '');
-				if(this.HasUpgrade()) cn += ' action ';
-				if(this.np < 0) cn += 'flip-horizontal ';
-				return cn;
-			}
-			
-			this.getHeading = function() {
-				return '' + Molpy.groupNames[this.group][0] + (this.HasUpgrade() ? '+' : '');
-			}
-			
-			this.getFormattedName = function() {
-				return '' + format((this.earned || this.visibility < 2 ? this.name : '????'));
-			};
-			
-			this.getOwned = function() {return '';}
-			
-			this.getPrice = function() {return '';}
-			
-			this.getBuySell = function() {return '';}
-			
-			this.getProduction = function() {return '';}
-			
-			this.getDesc = function() {
-				var text = EvalMaybeFunction((Molpy.IsStatsVisible() && this.stats) ? this.stats : this.desc, this);
-				return format(((this.earned || this.visibility < 1) ? text : '????')) + this.GetAlias();
-			}
-			
-			// Args:
-			//    forceNew (T/F): force recreation of the object's div
-			//    hover (T/F): add hover mechanics to the div
-			//    nohide (T/F): don't automatically hide the description when the div is created, useful for clicking a div's buttons
-			this.getDiv = function(args) {
-				if(this.divElement) {
-					if(!args.forceNew)
-						return this.divElement;
-					this.divElement.remove();
-				}
-				this.divElement = Molpy.newObjectDiv('badge', this, {hover: (args.hover || false), nohide: (args.nohide || false)});
-				return this.divElement;
-			}
-			
-			this.hasDiv = function() {
-				if(this.divElement) return true;
-				return false;
-			}
-			
-			// Methods for Div Updates
-			
-			this.repaint = function() {
-				if(!this.divElement) return;
-				
-				var parent = this.divElement.parent();
-				var index = this.divElement.index();
-				Molpy.removeDiv(this);
-				
-				// If mouse is currently hovering over this, it will start hovered
-				var nh = false;
-				var overID = '' + this.name + this.id;
-				if(Molpy.mouseIsOver == overID) nh = true;
-				
-				this.getDiv({forceNew: true, hover: true, nohide: nh});
-				parent.children().eq(index).before(this.divElement);		
-			}
-			
-			this.updateAll = function() {} //badges don't really update, would be nice to get rid of this
-
 			// Add Badge to lists
 			Molpy.Badges[this.alias] = this;
 			Molpy.BadgesById[this.id] = this;
@@ -1910,6 +1820,97 @@ Molpy.Up = function() {
 			
 			return this;
 		};
+		
+		$.extend(Molpy.Badge.prototype, {
+			Refresh: function() {
+				this.faveRefresh = 1;
+			},
+			
+			GetAlias: function() {
+				if((this.earned || this.visibility < 1) && Molpy.IsStatsVisible() && this.name != this.alias) {
+					return '<br>(Alias: ' + this.alias + ')';
+				}
+				return '';
+			},
+			
+			HasUpgrade: function() {
+				if(this.np) {
+					var nGroup = Molpy.nextBageGroup[this.group];
+					var nBadge = Molpy.Badges[nGroup + this.np];
+					if(nBadge && !nBadge.earned) {
+						return true;
+					}
+				}
+			},
+			
+			// Methods for Div Creation
+			getFullClass: function() {
+				var cn = 'badge lootbox ' + (this.earned ? 'loot ' : 'shop ') + (this.className || '');
+				if(this.HasUpgrade()) cn += ' action ';
+				if(this.np < 0) cn += 'flip-horizontal ';
+				return cn;
+			},
+			
+			getHeading: function() {
+				return '' + Molpy.groupNames[this.group][0] + (this.HasUpgrade() ? '+' : '');
+			},
+			
+			getFormattedName: function() {
+				return '' + format((this.earned || this.visibility < 2 ? this.name : '????'));
+			},
+			
+			getOwned: function() {return '';},
+			
+			getPrice: function() {return '';},
+			
+			getBuySell: function() {return '';},
+			
+			getProduction: function() {return '';},
+			
+			getDesc: function() {
+				var text = EvalMaybeFunction((Molpy.IsStatsVisible() && this.stats) ? this.stats : this.desc, this);
+				return format(((this.earned || this.visibility < 1) ? text : '????')) + this.GetAlias();
+			},
+			
+			// Args:
+			//    forceNew (T/F): force recreation of the object's div
+			//    hover (T/F): add hover mechanics to the div
+			//    nohide (T/F): don't automatically hide the description when the div is created, useful for clicking a div's buttons
+			getDiv: function(args) {
+				if(this.divElement) {
+					if(!args.forceNew)
+						return this.divElement;
+					this.divElement.remove();
+				}
+				this.divElement = Molpy.newObjectDiv('badge', this, {hover: (args.hover || false), nohide: (args.nohide || false)});
+				return this.divElement;
+			},
+			
+			hasDiv: function() {
+				if(this.divElement) return true;
+				return false;
+			},
+			
+			// Methods for Div Updates
+			
+			repaint: function() {
+				if(!this.divElement) return;
+				
+				var parent = this.divElement.parent();
+				var index = this.divElement.index();
+				Molpy.removeDiv(this);
+				
+				// If mouse is currently hovering over this, it will start hovered
+				var nh = false;
+				var overID = '' + this.name + this.id;
+				if(Molpy.mouseIsOver == overID) nh = true;
+				
+				this.getDiv({forceNew: true, hover: true, nohide: nh});
+				parent.children().eq(index).before(this.divElement);		
+			},
+			
+			updateAll: function() {}, //badges don't really update, would be nice to get rid of this
+		});
 
 		Molpy.groupBadgeCounts = {};
 		Molpy.EarnBadge = function(bacon, camera) {
