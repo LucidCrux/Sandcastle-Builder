@@ -1462,183 +1462,6 @@ Molpy.Up = function() {
 				Molpy.extend(this.saveData, defSaveData, false); // Add the default properties to save without overwriting
 			}
 
-			// Methods
-			this.buy = function(auto,freebe) {
-				Molpy.Anything = 1;
-				if(this.unlocked <= this.bought) return; //shopping assistant tried to buy it when it was locked
-				var realPrice = this.CalcPrice(this.price);
-				var free = freebe || Molpy.IsFree(realPrice);
-				if(Molpy.ProtectingPrice() && !free) return;
-				if(!free && !Molpy.Spend(realPrice)) return;
-
-				this.bought = (this.bought || 0) +1;
-				if(this.buyFunction) this.buyFunction();
-				_gaq && _gaq.push(['_trackEvent', 'Boost', 'Buy', this.name, !free]);
-				Molpy.boostNeedRepaint = 1;
-				Molpy.RatesRecalculate(4);
-				Molpy.DragonDigRecalc(); 
-				Molpy.BoostsOwned++;
-				Molpy.CheckBuyUnlocks();
-				Molpy.unlockedGroups[this.group] = 1;
-				this.Refresh();
-				if(!Molpy.boostSilence && !free && this.bought && !auto && Molpy.options.autoshow) {
-					Molpy.ShowGroup(this.group, this.className);
-				}
-				if(this.bought) Molpy.lootAddBoost(this);
-			};
-			
-			this.isAffordable = function() {
-				var realPrice = this.CalcPrice(this.price);
-				if(Molpy.IsFree(realPrice)) return 1;
-				if(Molpy.ProtectingPrice()) return 0;
-				return Molpy.Has(realPrice);
-			};
-			
-			this.CalcPrice = function(stuff) {
-				var p = {};
-				for( var i in stuff) {
-					var v = Math.floor(Molpy.priceFactor * EvalMaybeFunction(stuff[i], this, 1));
-					if(isNaN(v)) {
-						v = 0;
-						Molpy.EarnBadge('How do I Shot Mustard?');
-					}
-					if(v) p[i] = v;
-				}
-				return p;
-			};
-			
-			this.Refresh = function(indirect) {
-				Molpy.boostNeedRepaint = 1;
-
-				this.faveRefresh = 1;
-				if(!indirect && this.refreshFunction) this.refreshFunction();
-			};
-			
-			this.GetAlias = function() {
-				if(Molpy.IsStatsVisible() && this.name != this.alias) {
-					return '<br>(Alias: ' + this.alias + ')';
-				}
-				return '';
-			};
-			
-			this.describe = function() {
-				if(!Molpy.boostSilence) {
-					var desc = EvalMaybeFunction(this.desc, this);
-					if(desc) Molpy.Notify(this.name + ': ' + desc, 1);
-				}
-			};
-			
-			this.resetSaveData = function() {
-				for(var i in this.saveData)
-					this[this.saveData[i][0]] = this.saveData[i][1];
-			}
-			
-			// Methods for Div Creation
-			this.getFullClass = function() {
-				return 'boost ' + (this.bought || this.countdown > 0 ? 'lootbox loot ' : 'floatbox shop ') + (this.className || '');
-			}
-			
-			this.getHeading = function() {
-				if (!this.group || !Molpy.groupNames[this.group]) {
-					Molpy.Notify('Group Wrong for '+this.name);
-					return 'Unknown'
-				};
-				return "" + Molpy.groupNames[this.group][0]
-			     + ((this.tier != undefined && ' L' + Molpify(EvalMaybeFunction(this.tier))) || '');
-			}
-			
-			this.getFormattedName = function() {
-				return '' + format(this.name);
-			};
-			
-			this.getOwned = function() {return '';}
-			
-			this.getPrice = function() {
-				var p = '';
-				var realPrice = this.CalcPrice(this.price);
-				if(!Molpy.IsFree(realPrice)) p = realPrice;
-				return p;
-			}
-			
-			this.getBuySell = function() {
-				var buy = '';
-				if(this.unlocked > this.bought) {
-					var noBuy = this.isAffordable() ? '' : ' unbuyable';
-					buy = '<a class="buySpan' + noBuy + '" onclick="Molpy.BoostsById[' + this.id + '].buy();">Buy</a>';
-				}
-				return buy;
-			}
-			
-			this.getProduction = function() {return '';}
-			
-			this.getDesc = function() {
-				return format(EvalMaybeFunction((Molpy.IsStatsVisible() && this.stats) ? this.stats : this.desc, this))
-				     + format(this.prizes && Molpy.IsStatsVisible() && ('<br>Gives ' + Molpify(this.prizes)
-				            + ' random Prize' + plural(this.prizes) + ' from tier L' + EvalMaybeFunction(this.tier, 'show')
-				            + ' when Locked or Reset.') || '')
-				     + this.GetAlias();
-			}
-			
-			// Args:
-			//    forceNew (T/F): force recreation of the object's div
-			//    hover (T/F): add hover mechanics to the div
-			//    nohide (T/F): don't automatically hide the description when the div is created, useful for clicking a div's buttons
-			this.getDiv = function(args) {
-				if(this.divElement) {
-					if(!args.forceNew)
-						return this.divElement;
-					this.divElement.remove();
-				}
-				this.divElement = Molpy.newObjectDiv('boost', this, {hover: (args.hover || false), nohide: (args.nohide || false)});
-				return this.divElement;
-			}
-			
-			this.hasDiv = function() {
-				if(this.divElement) return true;
-				return false;
-			}
-			
-			// Methods for Div Updates
-			
-			this.repaint = function() {
-				if(!this.divElement) return;
-				
-				var parent = this.divElement.parent();
-				var index = this.divElement.index();
-				Molpy.removeDiv(this);
-				
-				// If mouse is currently hovering over this, it will start hovered
-				var nh = false;
-				var overID = '' + this.name + this.id;
-				if(Molpy.mouseIsOver == overID) nh = true;
-				
-				this.getDiv({forceNew: true, hover: true, nohide: nh});
-				parent.children().eq(index).before(this.divElement);		
-			}
-			
-			this.updateAll = function() {
-				this.updateBuy();
-				this.updatePrice();
-				this.updateProduction();
-			}
-			
-			this.updateBuy = function(fave) {
-				if(!this.divElement) return;
-				if(this.unlocked && (fave || this.bought<this.unlocked)) {
-					this.divElement.find('.buySpan').toggleClass('unbuyable', !this.isAffordable());
-				}
-			};
-			
-			this.updatePrice = function() {
-				if(!this.divElement) return;
-				this.divElement.find('.price').innerHTML = Molpy.createPriceHTML(this.getPrice());
-			}
-			
-			this.updateProduction = function() {
-				if(!this.divElement) return;
-				this.divElement.find('.production').innerHTML = this.getProduction();
-			}
-
 			// Add the boost to lists
 			Molpy.Boosts[this.alias] = this;
 			Molpy.BoostsById[this.id] = this;
@@ -1668,6 +1491,184 @@ Molpy.Up = function() {
 			
 			return this;
 		};
+		
+		$.extend(Molpy.Boost.prototype, {
+			buy: function(auto,freebe) {
+				Molpy.Anything = 1;
+				if(this.unlocked <= this.bought) return; //shopping assistant tried to buy it when it was locked
+				var realPrice = this.CalcPrice(this.price);
+				var free = freebe || Molpy.IsFree(realPrice);
+				if(Molpy.ProtectingPrice() && !free) return;
+				if(!free && !Molpy.Spend(realPrice)) return;
+
+				this.bought = (this.bought || 0) +1;
+				if(this.buyFunction) this.buyFunction();
+				_gaq && _gaq.push(['_trackEvent', 'Boost', 'Buy', this.name, !free]);
+				Molpy.boostNeedRepaint = 1;
+				Molpy.RatesRecalculate(4);
+				Molpy.DragonDigRecalc(); 
+				Molpy.BoostsOwned++;
+				Molpy.CheckBuyUnlocks();
+				Molpy.unlockedGroups[this.group] = 1;
+				this.Refresh();
+				if(!Molpy.boostSilence && !free && this.bought && !auto && Molpy.options.autoshow) {
+					Molpy.ShowGroup(this.group, this.className);
+				}
+				if(this.bought) Molpy.lootAddBoost(this);
+			},
+			
+			isAffordable: function() {
+				var realPrice = this.CalcPrice(this.price);
+				if(Molpy.IsFree(realPrice)) return 1;
+				if(Molpy.ProtectingPrice()) return 0;
+				return Molpy.Has(realPrice);
+			},
+			
+			CalcPrice: function(stuff) {
+				var p = {};
+				for( var i in stuff) {
+					var v = Math.floor(Molpy.priceFactor * EvalMaybeFunction(stuff[i], this, 1));
+					if(isNaN(v)) {
+						v = 0;
+						Molpy.EarnBadge('How do I Shot Mustard?');
+					}
+					if(v) p[i] = v;
+				}
+				return p;
+			},
+			
+			Refresh: function(indirect) {
+				Molpy.boostNeedRepaint = 1;
+
+				this.faveRefresh = 1;
+				if(!indirect && this.refreshFunction) this.refreshFunction();
+			},
+			
+			GetAlias: function() {
+				if(Molpy.IsStatsVisible() && this.name != this.alias) {
+					return '<br>(Alias: ' + this.alias + ')';
+				}
+				return '';
+			},
+			
+			describe: function() {
+				if(!Molpy.boostSilence) {
+					var desc = EvalMaybeFunction(this.desc, this);
+					if(desc) Molpy.Notify(this.name + ': ' + desc, 1);
+				}
+			},
+			
+			resetSaveData: function() {
+				for(var i in this.saveData)
+					this[this.saveData[i][0]] = this.saveData[i][1];
+			},
+			
+			// Methods for Div Creation
+			getFullClass: function() {
+				return 'boost ' + (this.bought || this.countdown > 0 ? 'lootbox loot ' : 'floatbox shop ') + (this.className || '');
+			},
+			
+			getHeading: function() {
+				if (!this.group || !Molpy.groupNames[this.group]) {
+					Molpy.Notify('Group Wrong for '+this.name);
+					return 'Unknown'
+				};
+				return "" + Molpy.groupNames[this.group][0]
+			     + ((this.tier != undefined && ' L' + Molpify(EvalMaybeFunction(this.tier))) || '');
+			},
+			
+			getFormattedName: function() {
+				return '' + format(this.name);
+			},
+			
+			getOwned: function() {return '';},
+			
+			getPrice: function() {
+				var p = '';
+				var realPrice = this.CalcPrice(this.price);
+				if(!Molpy.IsFree(realPrice)) p = realPrice;
+				return p;
+			},
+			
+			getBuySell: function() {
+				var buy = '';
+				if(this.unlocked > this.bought) {
+					var noBuy = this.isAffordable() ? '' : ' unbuyable';
+					buy = '<a class="buySpan' + noBuy + '" onclick="Molpy.BoostsById[' + this.id + '].buy();">Buy</a>';
+				}
+				return buy;
+			},
+			
+			getProduction: function() {return '';},
+			
+			getDesc: function() {
+				return format(EvalMaybeFunction((Molpy.IsStatsVisible() && this.stats) ? this.stats : this.desc, this))
+				     + format(this.prizes && Molpy.IsStatsVisible() && ('<br>Gives ' + Molpify(this.prizes)
+				            + ' random Prize' + plural(this.prizes) + ' from tier L' + EvalMaybeFunction(this.tier, 'show')
+				            + ' when Locked or Reset.') || '')
+				     + this.GetAlias();
+			},
+			
+			// Args:
+			//    forceNew (T/F): force recreation of the object's div
+			//    hover (T/F): add hover mechanics to the div
+			//    nohide (T/F): don't automatically hide the description when the div is created, useful for clicking a div's buttons
+			getDiv: function(args) {
+				if(this.divElement) {
+					if(!args.forceNew)
+						return this.divElement;
+					this.divElement.remove();
+				}
+				this.divElement = Molpy.newObjectDiv('boost', this, {hover: (args.hover || false), nohide: (args.nohide || false)});
+				return this.divElement;
+			},
+			
+			hasDiv: function() {
+				if(this.divElement) return true;
+				return false;
+			},
+			
+			// Methods for Div Updates
+			
+			repaint: function() {
+				if(!this.divElement) return;
+				
+				var parent = this.divElement.parent();
+				var index = this.divElement.index();
+				Molpy.removeDiv(this);
+				
+				// If mouse is currently hovering over this, it will start hovered
+				var nh = false;
+				var overID = '' + this.name + this.id;
+				if(Molpy.mouseIsOver == overID) nh = true;
+				
+				this.getDiv({forceNew: true, hover: true, nohide: nh});
+				parent.children().eq(index).before(this.divElement);		
+			},
+			
+			updateAll: function() {
+				this.updateBuy();
+				this.updatePrice();
+				this.updateProduction();
+			},
+			
+			updateBuy: function(fave) {
+				if(!this.divElement) return;
+				if(this.unlocked && (fave || this.bought<this.unlocked)) {
+					this.divElement.find('.buySpan').toggleClass('unbuyable', !this.isAffordable());
+				}
+			},
+			
+			updatePrice: function() {
+				if(!this.divElement) return;
+				this.divElement.find('.price').innerHTML = Molpy.createPriceHTML(this.getPrice());
+			},
+			
+			updateProduction: function() {
+				if(!this.divElement) return;
+				this.divElement.find('.production').innerHTML = this.getProduction();
+			},
+		});
 
 		Molpy.UnlockBoost = function(bacon, auto) {
 			Molpy.Anything = 1;
