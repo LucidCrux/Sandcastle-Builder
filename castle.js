@@ -578,7 +578,7 @@ Molpy.Up = function() {
 			return this;
 		};
 		
-		$.extend(Molpy.Sandtool.prototype, {
+		$.extend(Molpy.SandTool.prototype, {
 			buy: function() {
 				Molpy.Anything = 1;
 				if(Molpy.ProtectingPrice()) return;
@@ -894,7 +894,7 @@ Molpy.Up = function() {
 			return this;
 		};
 		
-		$.extend(Molpy.Castletool.prototype, {
+		$.extend(Molpy.CastleTool.prototype, {
 			buy: function() {
 				Molpy.Anything = 1;
 				if(Molpy.ProtectingPrice()) return;
